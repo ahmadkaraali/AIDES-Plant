@@ -1,69 +1,96 @@
 import streamlit as st
+import numpy as np
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime
 
-# 1. إعدادات الصفحة لتظهر كمنصة احترافية
-st.set_page_config(page_title="Smart Water Plant", layout="wide", page_icon="💧")
+# --- إعدادات المنصة الاحترافية ---
+st.set_page_config(page_title="AIDES AI-OS Platform", layout="wide", page_icon="💧")
 
-st.markdown("<h1 style='text-align: center; color: #0077b6;'>💧 Smart Water Desalination Dashboard</h1>", unsafe_allow_html=True)
+# تصميم الواجهة بالألوان الصناعية
+st.markdown("""
+    <style>
+    .main { background-color: #f5f7f9; }
+    .stMetric { background-color: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- 1. الهيدر الرئيسي ---
+st.title("🌊 منصة AIDES الذكية للتحلية والإنتاج")
+st.markdown("### نظام التحكم بالذكاء الاصطناعي وإنتاج الجبس | AI-Driven Electro-Sorption & Gypsum Production")
 st.write("---")
 
-# 2. وظيفة ذكية لقراءة البيانات وتجنب الأخطاء
-def load_data(uploaded_file):
-    if uploaded_file is not None:
-        try:
-            return pd.read_excel(uploaded_file)
-        except:
-            return pd.read_csv(uploaded_file)
-    else:
-        # بيانات تجريبية لإبهار الشركة فور فتح الموقع
-        data = {
-            'Code': ['REQ-2026-001', 'MNT-2026-042', 'LAB-2026-015', 'REQ-2026-005'],
-            'Department': ['Production', 'Maintenance', 'Quality Lab', 'Production'],
-            'Status': ['Completed', 'Pending', 'Completed', 'In Progress']
-        }
-        return pd.DataFrame(data)
+# --- 2. محرك الذكاء الاصطناعي (مستوحى من كود Z4.txt) ---
+class AIDES_Engine:
+    def __init__(self, tds, flow):
+        self.tds = tds
+        self.flow = flow
+    
+    def calculate_metrics(self):
+        # معادلات تقديرية لإنتاج الجبس والمخاطر
+        scaling_risk = (self.tds / 50000) * 100
+        gypsum_out = (self.tds * self.flow) / 1000000 * 1.5
+        revenue = gypsum_out * 120 # افتراض سعر الطن 120 دولار
+        return scaling_risk, gypsum_out, revenue
 
-# القائمة الجانبية
-st.sidebar.header("⚙️ Control Panel")
-file = st.sidebar.file_uploader("Update Plant Data", type=["xlsx", "xls", "csv"])
+# --- 3. القائمة الجانبية لإدخال البيانات الحية ---
+st.sidebar.header("🕹️ لوحة التحكم التشغيلية")
+tds_input = st.sidebar.slider("الملوحة (TDS - mg/L)", 5000, 100000, 35000)
+flow_input = st.sidebar.slider("التدفق (Flow Rate - m³/h)", 10, 500, 150)
+uploaded_file = st.sidebar.file_uploader("📂 تحديث أرشيف البيانات (Excel)", type=["xlsx"])
 
-# تحميل البيانات (سواء المرفوعة أو التجريبية)
-df = load_data(file)
+engine = AIDES_Engine(tds_input, flow_input)
+risk, gyp, money = engine.calculate_metrics()
 
-# 3. عرض العدادات (Metrics) بشكل جذاب
-st.subheader("🚀 Operational Overview")
+# --- 4. عرض النتائج الحية (المرحلة الذكية) ---
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Total Operations", len(df), "+5% increase")
+    st.subheader("1️⃣ التنبؤ بالترسيب")
+    color = "green" if risk < 40 else "orange" if risk < 70 else "red"
+    fig_risk = go.Figure(go.Indicator(
+        mode="gauge+number", value=risk,
+        title={'text': "مستوى مخاطر الترسيب %"},
+        gauge={'axis': {'range': [0, 100]}, 'bar': {'color': color}}
+    ))
+    st.plotly_chart(fig_risk, use_container_width=True)
+
 with col2:
-    # محاولة ذكية لحساب المكتمل بغض النظر عن لغة العمود
-    completed_count = len(df[df.apply(lambda x: x.astype(str).str.contains('Completed|مكتمل').any(), axis=1)])
-    st.metric("Successful Tasks", completed_count)
+    st.subheader("2️⃣ التحكم الذكي (Voltage)")
+    voltage = 1.2 + (risk/200)
+    st.metric("الجهد الكهربائي الأمثل", f"{voltage:.2f} V")
+    if risk > 75:
+        st.error("⚠️ تفعيل نظام التنظيف الذاتي فوراً")
+    else:
+        st.success("✅ النظام يعمل بكفاءة مثالية")
+
 with col3:
-    st.metric("Plant Status", "Optimal ✅")
+    st.subheader("3️⃣ استعادة الجبس (الربح)")
+    st.metric("إنتاج الجبس المتوقع", f"{gyp:.2f} طن/ساعة")
+    st.metric("العائد المادي التقديري", f"${money:.0f}")
+    st.info("💎 تحويل النفايات إلى منتج اقتصادي")
 
-# 4. الرسوم البيانية التفاعلية
+# --- 5. نظام الأرشفة (الربط مع ملف الإكسل الخاص بك) ---
 st.write("---")
-c1, c2 = st.columns([2, 1])
+st.subheader("📋 نظام الأرشفة والتدقيق الرقمي")
 
-with c1:
-    st.subheader("📊 Workload Analysis")
-    # البحث عن أي عمود يحتوي على "قسم" أو "Department"
-    target_col = next((c for c in df.columns if 'القسم' in c or 'Department' in c or 'Type' in c), df.columns[0])
-    fig = px.bar(df, x=target_col, color=target_col, title="Distribution by Category")
-    st.plotly_chart(fig, use_container_width=True)
+if uploaded_file:
+    df = pd.read_excel(uploaded_file)
+    st.success("✅ تم ربط الأرشيف بنجاح")
+else:
+    # بيانات افتراضية للأرشفة (REQ, MNT, LAB) لضمان عدم الجمود
+    data = {
+        'كود السجل': ['REQ-2026-001', 'MNT-2026-042', 'LAB-2026-015', 'GYP-PROD-01'],
+        'نوع البيان': ['تحليل TDS', 'صيانة مضخات', 'قياس أكسجين', 'إنتاج الجبس'],
+        'الحالة': ['مكتمل', 'جاري التدقيق', 'مكتمل', 'تحت المعالجة']
+    }
+    df = pd.DataFrame(data)
 
-with c2:
-    st.subheader("🔍 Quick Filter")
-    search = st.text_input("Enter Code (e.g. REQ):")
-    if search:
-        df = df[df.apply(lambda r: r.astype(str).str.contains(search, case=False).any(), axis=1)]
-
-# 5. عرض الجدول النهائي
-st.subheader("📂 Detailed Digital Archive")
 st.dataframe(df, use_container_width=True)
 
-st.write("---")
-st.caption("Advanced Solution for Water Plants - Developed by Dr. Ahmed 2026")
+# --- 6. المعادلات الهندسية (لإبهار اللجنة) ---
+with st.expander("🔬 المنطق الهندسي والمعادلات"):
+    st.latex(r"Scaling\_Risk = \frac{[TDS]}{K_{sp} \cdot Factor}")
+    st.latex(r"Gypsum_{Revenue} = Production \times Market\_Price")
+
+st.caption("Developed by Dr. Ahmed | AIDES Smart Systems 2026")
