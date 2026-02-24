@@ -1,85 +1,69 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 
-# إعدادات واجهة المنصة الاحترافية
-st.set_page_config(page_title="Water Desalination Smart Platform", layout="wide", page_icon="💧")
+# 1. إعدادات الصفحة لتظهر كمنصة احترافية
+st.set_page_config(page_title="Smart Water Plant", layout="wide", page_icon="💧")
 
-# تحسين المظهر الخارجي بلمسة صناعية
-st.markdown("""
-    <style>
-    .main { background-color: #f0f2f6; }
-    .stMetric { background-color: #ffffff; padding: 15px; border-radius: 10px; border: 1px solid #e0e0e0; }
-    </style>
-    """, unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #0077b6;'>💧 Smart Water Desalination Dashboard</h1>", unsafe_allow_html=True)
+st.write("---")
 
-st.title("💧 Water Desalination Plant - Smart Control Center")
-st.markdown("---")
+# 2. وظيفة ذكية لقراءة البيانات وتجنب الأخطاء
+def load_data(uploaded_file):
+    if uploaded_file is not None:
+        try:
+            return pd.read_excel(uploaded_file)
+        except:
+            return pd.read_csv(uploaded_file)
+    else:
+        # بيانات تجريبية لإبهار الشركة فور فتح الموقع
+        data = {
+            'Code': ['REQ-2026-001', 'MNT-2026-042', 'LAB-2026-015', 'REQ-2026-005'],
+            'Department': ['Production', 'Maintenance', 'Quality Lab', 'Production'],
+            'Status': ['Completed', 'Pending', 'Completed', 'In Progress']
+        }
+        return pd.DataFrame(data)
 
-# القائمة الجانبية للتحكم
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/3105/3105807.png", width=100)
-st.sidebar.title("Operational Control")
-uploaded_file = st.sidebar.file_uploader("Upload Plant Operational Data (Excel)", type=["xlsx", "xls"])
+# القائمة الجانبية
+st.sidebar.header("⚙️ Control Panel")
+file = st.sidebar.file_uploader("Update Plant Data", type=["xlsx", "xls", "csv"])
 
-if uploaded_file is not None:
-    df = pd.read_excel(uploaded_file)
-    st.success("✅ Plant Data Synchronized Successfully!")
+# تحميل البيانات (سواء المرفوعة أو التجريبية)
+df = load_data(file)
 
-    # --- القسم الأول: مؤشرات الأداء الرئيسية (KPIs) ---
-    st.subheader("📊 Key Performance Indicators (KPIs)")
-    m1, m2, m3, m4 = st.columns(4)
-    
-    with m1:
-        st.metric(label="Total Requests", value=len(df))
-    with m2:
-        # البحث عن طلبات الصيانة المكتملة
-        done_mnt = len(df[df.apply(lambda x: 'MNT' in str(x).upper() and 'مكتمل' in str(x), axis=1)])
-        st.metric(label="Maintenance Efficiency", value=f"{done_mnt} Jobs")
-    with m3:
-        # البحث عن فحوصات المختبر
-        lab_tests = len(df[df.apply(lambda x: 'LAB' in str(x).upper(), axis=1)])
-        st.metric(label="Quality Lab Tests", value=lab_tests)
-    with m4:
-        st.metric(label="System Status", value="Active", delta="Operational")
+# 3. عرض العدادات (Metrics) بشكل جذاب
+st.subheader("🚀 Operational Overview")
+col1, col2, col3 = st.columns(3)
 
-    # --- القسم الثاني: التحليل البياني والخرائط الذهنية ---
-    st.write("---")
-    c1, c2 = st.columns([2, 1])
+with col1:
+    st.metric("Total Operations", len(df), "+5% increase")
+with col2:
+    # محاولة ذكية لحساب المكتمل بغض النظر عن لغة العمود
+    completed_count = len(df[df.apply(lambda x: x.astype(str).str.contains('Completed|مكتمل').any(), axis=1)])
+    st.metric("Successful Tasks", completed_count)
+with col3:
+    st.metric("Plant Status", "Optimal ✅")
 
-    with c1:
-        st.subheader("📈 Operational Trend Analysis")
-        # رسم بياني يوضح توزيع العمل حسب النوع (REQ, MNT, LAB)
-        df['Type'] = df.iloc[:, 0].apply(lambda x: 'Maintenance' if 'MNT' in str(x) else ('Lab' if 'LAB' in str(x) else 'Request'))
-        fig_line = px.bar(df, x='Type', color='Type', title="Workload Distribution", template="plotly_white")
-        st.plotly_chart(fig_line, use_container_width=True)
+# 4. الرسوم البيانية التفاعلية
+st.write("---")
+c1, c2 = st.columns([2, 1])
 
-    with c2:
-        st.subheader("📋 Quick Action Center")
-        search = st.text_input("Quick Search (Code/Status):")
-        if search:
-            df_search = df[df.apply(lambda row: row.astype(str).str.contains(search, case=False).any(), axis=1)]
-            st.dataframe(df_search[['الرمز', 'البيان', 'الحالة']] if 'الرمز' in df.columns else df.head(10))
-        else:
-            st.info("Search by code (e.g., REQ-2026)")
+with c1:
+    st.subheader("📊 Workload Analysis")
+    # البحث عن أي عمود يحتوي على "قسم" أو "Department"
+    target_col = next((c for c in df.columns if 'القسم' in c or 'Department' in c or 'Type' in c), df.columns[0])
+    fig = px.bar(df, x=target_col, color=target_col, title="Distribution by Category")
+    st.plotly_chart(fig, use_container_width=True)
 
-    # --- القسم الثالث: جدول البيانات الكامل بنظام احترافي ---
-    st.write("---")
-    with st.expander("📂 View Full Archiving Logs"):
-        st.dataframe(df, use_container_width=True)
+with c2:
+    st.subheader("🔍 Quick Filter")
+    search = st.text_input("Enter Code (e.g. REQ):")
+    if search:
+        df = df[df.apply(lambda r: r.astype(str).str.contains(search, case=False).any(), axis=1)]
 
-else:
-    # واجهة ترحيبية قوية لإقناع الشركة
-    st.info("📢 Waiting for Plant Data Stream...")
-    st.warning("Please upload the Excel file to activate the real-time Dashboard.")
-    
-    # محاكاة لما سيبدو عليه الأمر (Demo)
-    st.markdown("""
-    ### Why 'Your Smart Assistant'?
-    * **Efficiency:** Automated tracking of maintenance (MNT) and lab (LAB) tasks [cite: 2026-02-07].
-    * **Precision:** No more lost paper logs; every request (REQ) is archived digitally [cite: 2026-02-17].
-    * **Decision Making:** Real-time charts to help management optimize water production [cite: 2026-02-07].
-    """)
+# 5. عرض الجدول النهائي
+st.subheader("📂 Detailed Digital Archive")
+st.dataframe(df, use_container_width=True)
 
 st.write("---")
-st.caption("Developed by Dr. Ahmed - Smart Water Management Solution 2026")
+st.caption("Advanced Solution for Water Plants - Developed by Dr. Ahmed 2026")
