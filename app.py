@@ -1,76 +1,64 @@
 import streamlit as st
 import time
-import pandas as pd
-import plotly.graph_objects as go
 
 # إعدادات المنصة
-st.set_page_config(page_title="AIDES Live Control AI", layout="wide", page_icon="⚙️")
+st.set_page_config(page_title="AIDES Visual Factory", layout="wide", page_icon="🏭")
 
-st.markdown("<h1 style='text-align: center; color: #0077b6;'>⚙️ نظام AIDES للتحكم الذكي المتحرك</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #005f73;'>🏭 محاكاة التشغيل الذكي: من المياه إلى الجبس</h1>", unsafe_allow_html=True)
 st.write("---")
 
-# القائمة الجانبية لإعطاء أوامر التشغيل
-st.sidebar.header("🎮 لوحة التحكم في المحاكاة")
-start_btn = st.sidebar.button("🚀 بدء عملية المعالجة الذكية")
-stop_btn = st.sidebar.button("🛑 إيقاف النظام")
+# روابط صور متحركة تعبيرية (يمكن استبدالها بروابط مباشرة لصور محطتكم)
+img_intake = "https://cdn.dribbble.com/users/2051513/screenshots/4338902/media/6b867c296711818274640f898a96d27f.gif" # صوره سحب مياه
+img_processing = "https://cdn.dribbble.com/users/59947/screenshots/5554614/media/9d63c1e29e92d9d107a61d1912953265.gif" # صورة معالجة وكهرباء
+img_gypsum = "https://cdn.dribbble.com/users/1162077/screenshots/3848914/media/4e7d95d18d8a7a938c8c50c18d890b0e.gif" # صورة إنتاج وتعبئة
 
-# أماكن عرض المحتوى المتحرك
-status_placeholder = st.empty()
-progress_bar = st.progress(0)
-col1, col2, col3 = st.columns(3)
-
-# دوال رسم العدادات
-def create_gauge(value, title, color):
-    return go.Figure(go.Indicator(
-        mode="gauge+number", value=value,
-        domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': title},
-        gauge={'bar': {'color': color}, 'axis': {'range': [0, 100]}}
-    ))
-
-# منطق التشغيل المتحرك
-if start_btn:
-    # المرحلة الأولى: تحليل المياه
-    status_placeholder.warning("🔍 المرحلة الأولى: الذكاء الاصطناعي يحلل ملوحة المياه (TDS)...")
-    progress_bar.progress(10)
-    time.sleep(2) # انتظار وهمي للمحاكاة
+# زر التشغيل
+if st.sidebar.button("▶️ تشغيل الدورة الإنتاجية الآن"):
     
-    with col1:
-        st.write("🧪 **نتائج المختبر الرقمي**")
-        st.plotly_chart(create_gauge(85, "مستوى الملوحة %", "blue"), use_container_width=True)
+    # --- المرحلة الأولى ---
+    c1, c2 = st.columns([1, 2])
+    with c1:
+        st.image(img_intake, caption="1. وحدة سحب وتحليل المياه", use_column_width=True)
+    with c2:
+        st.info("🔍 جاري فحص الحساسات الذكية...")
+        bar1 = st.progress(0)
+        for i in range(100):
+            time.sleep(0.02)
+            bar1.progress(i + 1)
+        st.write("✅ تم تحليل الملوحة: **38,000 ppm**")
     
-    # المرحلة الثانية: التحكم في الجهد
-    status_placeholder.info("⚡ المرحلة الثانية: توجيه الطاقة الكهربائية بناءً على النتائج...")
-    progress_bar.progress(50)
-    time.sleep(2)
+    st.write("---")
     
-    with col2:
-        st.write("⚡ **نظام الـ Electro-Sorption**")
-        st.plotly_chart(create_gauge(65, "الجهد الكهربائي (V)", "orange"), use_container_width=True)
-        st.success("✅ تم ضبط الجهد لمنع الترسيب")
+    # --- المرحلة الثانية ---
+    c3, c4 = st.columns([1, 2])
+    with c3:
+        st.image(img_processing, caption="2. وحدة الانتزاع الكهربائي (AIDES)", use_column_width=True)
+    with c4:
+        st.warning("⚡ جاري ضبط الجهد الكهربائي ومنع الترسيب...")
+        bar2 = st.progress(0)
+        for i in range(100):
+            time.sleep(0.03)
+            bar2.progress(i + 1)
+        st.write("✅ الجهد التشغيلي الحالي: **1.45 Volt**")
 
-    # المرحلة الثالثة: إنتاج الجبس
-    status_placeholder.success("🏗️ المرحلة الثالثة: جاري استخلاص الجبس وترسيبه...")
-    progress_bar.progress(100)
-    time.sleep(2)
-    
-    with col3:
-        st.write("💎 **وحدة الإنتاج الاقتصادي**")
-        st.plotly_chart(create_gauge(92, "نقاء الجبس %", "green"), use_container_width=True)
-        st.metric("كمية الإنتاج الحالية", "5.4 طن/ساعة")
+    st.write("---")
 
-    status_placeholder.success("✅ تم اكتمال الدورة التشغيلية بنجاح!")
-    st.balloons() # احتفال بسيط عند النجاح
+    # --- المرحلة الثالثة ---
+    c5, c6 = st.columns([1, 2])
+    with c5:
+        st.image(img_gypsum, caption="3. وحدة بلورة واستخراج الجبس", use_column_width=True)
+    with c6:
+        st.success("🏗️ جاري ترسيب الجبس ونقله للمخازن...")
+        bar3 = st.progress(0)
+        for i in range(100):
+            time.sleep(0.04)
+            bar3.progress(i + 1)
+        st.write("✅ كمية الإنتاج: **12.5 طن/ساعة**")
+        st.balloons()
 
 else:
-    status_placeholder.info("📥 اضغط على زر 'بدء عملية المعالجة الذكية' من القائمة الجانبية لرؤية النظام يعمل.")
+    st.info("👈 اضغط على زر التشغيل في القائمة الجانبية لبدء المحاكاة الحركية للمحطة.")
 
-# عرض الأرشيف في الأسفل
-st.write("---")
-st.subheader("📂 سجلات الأرشفة الرقمية")
-demo_data = {
-    'الخطوة': ['تحليل ملوحة', 'تعديل جهد', 'فحص ترسيب', 'إنتاج جبس'],
-    'المسؤول': ['AI-Sensor', 'AI-Control', 'AI-Vision', 'Production Unit'],
-    'الوقت': [pd.Timestamp.now().strftime('%H:%M:%S')] * 4
-}
-st.table(pd.DataFrame(demo_data))
+# أرشيف البيانات المعتاد في الأسفل لتوثيق العمل
+with st.expander("📂 أرشيف سجلات التشغيل الرقمي"):
+    st.write("هنا تظهر بيانات ملف الإكسل الخاص بك (REQ/MNT/LAB)")
