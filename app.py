@@ -1,96 +1,76 @@
 import streamlit as st
-import numpy as np
+import time
 import pandas as pd
 import plotly.graph_objects as go
-from datetime import datetime
 
-# --- إعدادات المنصة الاحترافية ---
-st.set_page_config(page_title="AIDES AI-OS Platform", layout="wide", page_icon="💧")
+# إعدادات المنصة
+st.set_page_config(page_title="AIDES Live Control AI", layout="wide", page_icon="⚙️")
 
-# تصميم الواجهة بالألوان الصناعية
-st.markdown("""
-    <style>
-    .main { background-color: #f5f7f9; }
-    .stMetric { background-color: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- 1. الهيدر الرئيسي ---
-st.title("🌊 منصة AIDES الذكية للتحلية والإنتاج")
-st.markdown("### نظام التحكم بالذكاء الاصطناعي وإنتاج الجبس | AI-Driven Electro-Sorption & Gypsum Production")
+st.markdown("<h1 style='text-align: center; color: #0077b6;'>⚙️ نظام AIDES للتحكم الذكي المتحرك</h1>", unsafe_allow_html=True)
 st.write("---")
 
-# --- 2. محرك الذكاء الاصطناعي (مستوحى من كود Z4.txt) ---
-class AIDES_Engine:
-    def __init__(self, tds, flow):
-        self.tds = tds
-        self.flow = flow
-    
-    def calculate_metrics(self):
-        # معادلات تقديرية لإنتاج الجبس والمخاطر
-        scaling_risk = (self.tds / 50000) * 100
-        gypsum_out = (self.tds * self.flow) / 1000000 * 1.5
-        revenue = gypsum_out * 120 # افتراض سعر الطن 120 دولار
-        return scaling_risk, gypsum_out, revenue
+# القائمة الجانبية لإعطاء أوامر التشغيل
+st.sidebar.header("🎮 لوحة التحكم في المحاكاة")
+start_btn = st.sidebar.button("🚀 بدء عملية المعالجة الذكية")
+stop_btn = st.sidebar.button("🛑 إيقاف النظام")
 
-# --- 3. القائمة الجانبية لإدخال البيانات الحية ---
-st.sidebar.header("🕹️ لوحة التحكم التشغيلية")
-tds_input = st.sidebar.slider("الملوحة (TDS - mg/L)", 5000, 100000, 35000)
-flow_input = st.sidebar.slider("التدفق (Flow Rate - m³/h)", 10, 500, 150)
-uploaded_file = st.sidebar.file_uploader("📂 تحديث أرشيف البيانات (Excel)", type=["xlsx"])
-
-engine = AIDES_Engine(tds_input, flow_input)
-risk, gyp, money = engine.calculate_metrics()
-
-# --- 4. عرض النتائج الحية (المرحلة الذكية) ---
+# أماكن عرض المحتوى المتحرك
+status_placeholder = st.empty()
+progress_bar = st.progress(0)
 col1, col2, col3 = st.columns(3)
 
-with col1:
-    st.subheader("1️⃣ التنبؤ بالترسيب")
-    color = "green" if risk < 40 else "orange" if risk < 70 else "red"
-    fig_risk = go.Figure(go.Indicator(
-        mode="gauge+number", value=risk,
-        title={'text': "مستوى مخاطر الترسيب %"},
-        gauge={'axis': {'range': [0, 100]}, 'bar': {'color': color}}
+# دوال رسم العدادات
+def create_gauge(value, title, color):
+    return go.Figure(go.Indicator(
+        mode="gauge+number", value=value,
+        domain={'x': [0, 1], 'y': [0, 1]},
+        title={'text': title},
+        gauge={'bar': {'color': color}, 'axis': {'range': [0, 100]}}
     ))
-    st.plotly_chart(fig_risk, use_container_width=True)
 
-with col2:
-    st.subheader("2️⃣ التحكم الذكي (Voltage)")
-    voltage = 1.2 + (risk/200)
-    st.metric("الجهد الكهربائي الأمثل", f"{voltage:.2f} V")
-    if risk > 75:
-        st.error("⚠️ تفعيل نظام التنظيف الذاتي فوراً")
-    else:
-        st.success("✅ النظام يعمل بكفاءة مثالية")
+# منطق التشغيل المتحرك
+if start_btn:
+    # المرحلة الأولى: تحليل المياه
+    status_placeholder.warning("🔍 المرحلة الأولى: الذكاء الاصطناعي يحلل ملوحة المياه (TDS)...")
+    progress_bar.progress(10)
+    time.sleep(2) # انتظار وهمي للمحاكاة
+    
+    with col1:
+        st.write("🧪 **نتائج المختبر الرقمي**")
+        st.plotly_chart(create_gauge(85, "مستوى الملوحة %", "blue"), use_container_width=True)
+    
+    # المرحلة الثانية: التحكم في الجهد
+    status_placeholder.info("⚡ المرحلة الثانية: توجيه الطاقة الكهربائية بناءً على النتائج...")
+    progress_bar.progress(50)
+    time.sleep(2)
+    
+    with col2:
+        st.write("⚡ **نظام الـ Electro-Sorption**")
+        st.plotly_chart(create_gauge(65, "الجهد الكهربائي (V)", "orange"), use_container_width=True)
+        st.success("✅ تم ضبط الجهد لمنع الترسيب")
 
-with col3:
-    st.subheader("3️⃣ استعادة الجبس (الربح)")
-    st.metric("إنتاج الجبس المتوقع", f"{gyp:.2f} طن/ساعة")
-    st.metric("العائد المادي التقديري", f"${money:.0f}")
-    st.info("💎 تحويل النفايات إلى منتج اقتصادي")
+    # المرحلة الثالثة: إنتاج الجبس
+    status_placeholder.success("🏗️ المرحلة الثالثة: جاري استخلاص الجبس وترسيبه...")
+    progress_bar.progress(100)
+    time.sleep(2)
+    
+    with col3:
+        st.write("💎 **وحدة الإنتاج الاقتصادي**")
+        st.plotly_chart(create_gauge(92, "نقاء الجبس %", "green"), use_container_width=True)
+        st.metric("كمية الإنتاج الحالية", "5.4 طن/ساعة")
 
-# --- 5. نظام الأرشفة (الربط مع ملف الإكسل الخاص بك) ---
-st.write("---")
-st.subheader("📋 نظام الأرشفة والتدقيق الرقمي")
+    status_placeholder.success("✅ تم اكتمال الدورة التشغيلية بنجاح!")
+    st.balloons() # احتفال بسيط عند النجاح
 
-if uploaded_file:
-    df = pd.read_excel(uploaded_file)
-    st.success("✅ تم ربط الأرشيف بنجاح")
 else:
-    # بيانات افتراضية للأرشفة (REQ, MNT, LAB) لضمان عدم الجمود
-    data = {
-        'كود السجل': ['REQ-2026-001', 'MNT-2026-042', 'LAB-2026-015', 'GYP-PROD-01'],
-        'نوع البيان': ['تحليل TDS', 'صيانة مضخات', 'قياس أكسجين', 'إنتاج الجبس'],
-        'الحالة': ['مكتمل', 'جاري التدقيق', 'مكتمل', 'تحت المعالجة']
-    }
-    df = pd.DataFrame(data)
+    status_placeholder.info("📥 اضغط على زر 'بدء عملية المعالجة الذكية' من القائمة الجانبية لرؤية النظام يعمل.")
 
-st.dataframe(df, use_container_width=True)
-
-# --- 6. المعادلات الهندسية (لإبهار اللجنة) ---
-with st.expander("🔬 المنطق الهندسي والمعادلات"):
-    st.latex(r"Scaling\_Risk = \frac{[TDS]}{K_{sp} \cdot Factor}")
-    st.latex(r"Gypsum_{Revenue} = Production \times Market\_Price")
-
-st.caption("Developed by Dr. Ahmed | AIDES Smart Systems 2026")
+# عرض الأرشيف في الأسفل
+st.write("---")
+st.subheader("📂 سجلات الأرشفة الرقمية")
+demo_data = {
+    'الخطوة': ['تحليل ملوحة', 'تعديل جهد', 'فحص ترسيب', 'إنتاج جبس'],
+    'المسؤول': ['AI-Sensor', 'AI-Control', 'AI-Vision', 'Production Unit'],
+    'الوقت': [pd.Timestamp.now().strftime('%H:%M:%S')] * 4
+}
+st.table(pd.DataFrame(demo_data))
