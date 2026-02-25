@@ -3,74 +3,85 @@ import time
 import pandas as pd
 import plotly.graph_objects as go
 
-# 1. إعدادات المنصة الاحترافية
-st.set_page_config(page_title="AIDES Smart Platform 2026", layout="wide", page_icon="🏗️")
+# إعدادات الواجهة الفاخرة
+st.set_page_config(page_title="AIDES Hyper-Visual Platform", layout="wide", page_icon="🏗️")
 
-st.markdown("<h1 style='text-align: center; color: #005f73;'>🏢 منصة AIDES للتحكم الذكي وإنتاج الجبس</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>نظام التشغيل التفاعلي - إدارة التحلية واستعادة الموارد</p>", unsafe_allow_html=True)
+# CSS لإضافة تأثيرات جمالية (تدرج ألوان واهتزاز بسيط للتنبيهات)
+st.markdown("""
+    <style>
+    .reportview-container { background: linear-gradient(to right, #ece9e6, #ffffff); }
+    .stMetric { border-left: 5px solid #005f73; background-color: #f8f9fa; }
+    @keyframes blinker { 50% { opacity: 0; } }
+    .alert-flash { color: red; animation: blinker 1s linear infinite; font-weight: bold; }
+    </style>
+    """, unsafe_allow_html=True)
+
+st.title("🏗️ المركز السيادي للتحكم الذكي | AIDES Hyper-Platform")
+st.markdown("<p style='font-size: 20px; color: #555;'>نظام إدارة الموارد المتكاملة: تحلية المياه واستعادة المعادن</p>", unsafe_allow_html=True)
 st.write("---")
 
-# 2. روابط الصور المتحركة (تم اختيارها لتمثيل المصنع)
-GIF_INTAKE = "https://cdn.dribbble.com/users/2051513/screenshots/4338902/media/6b867c296711818274640f898a96d27f.gif"
-GIF_PROCESSING = "https://cdn.dribbble.com/users/59947/screenshots/5554614/media/9d63c1e29e92d9d107a61d1912953265.gif"
-GIF_GYPSUM = "https://cdn.dribbble.com/users/1162077/screenshots/3848914/media/4e7d95d18d8a7a938c8c50c18d890b0e.gif"
+# روابط وسائط عالية الجودة (عناصر متحركة)
+GIF_MOLECULES = "https://cdn.dribbble.com/users/244440/screenshots/2361250/media/1d9b324391672323e98188172828b1a9.gif" # محاكاة حركة الجزيئات
+GIF_CONTROL_ROOM = "https://cdn.dribbble.com/users/1059583/screenshots/3944634/media/f38f71261d713c706d33454224c30c82.gif" # غرفة التحكم
 
-# 3. القائمة الجانبية (ثابتة للمناقشة)
-st.sidebar.header("🕹️ مركز التحكم")
-start_op = st.sidebar.button("🚀 تشغيل محاكاة النظام الذكي")
-uploaded_file = st.sidebar.file_uploader("📂 تحميل ملف الأرشفة (اختياري)", type=["xlsx"])
+# القائمة الجانبية
+st.sidebar.image(GIF_CONTROL_ROOM, use_container_width=True)
+st.sidebar.header("🕹️ التحكم في السيناريو التشغيلي")
+scenario = st.sidebar.selectbox("اختر وضع التشغيل:", ["الوضع الطبيعي", "وضع الملوحة العالية", "حالة طوارئ (ترسيب)"])
+run_btn = st.sidebar.button("🚀 إطلاق المحاكاة الشاملة")
 
-# 4. منطق التشغيل المتسلسل (المحاكاة المتحركة)
-if start_op:
-    # المرحلة 1
-    st.subheader("1️⃣ مرحلة سحب وتحليل المياه (Intake & Analysis)")
-    c1, c2 = st.columns([1, 2])
-    with c1:
-        st.image(GIF_INTAKE, use_container_width=True)
-    with c2:
-        with st.status("جاري سحب عينات المياه وتحليل الملوحة...", expanded=True):
-            time.sleep(1.5)
-            st.write("✅ الحساسات: TDS = 38,000 ppm")
-            st.write("✅ التدفق: 150 m³/h")
+if run_btn:
+    # المرحلة 1: التحليل الكيميائي الرقمي
+    st.subheader("🔍 المرحلة الأولى: الاستشعار الكيميائي المتقدم")
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image(GIF_MOLECULES, caption="محاكاة حركة الأيونات في المحلول", use_container_width=True)
+    with col2:
+        st.write("### تحليل التدفق الحقيقي")
+        tds_val = 35000 if scenario == "الوضع الطبيعي" else 65000
+        st.progress(0.4)
+        st.metric("تركيز الأملاح الحالي", f"{tds_val} ppm", delta="حالة مستقرة" if tds_val < 40000 else "حرجة", delta_color="inverse")
+        time.sleep(1)
+
+    # المرحلة 2: المعالجة الذكية (قلب النظام)
     st.write("---")
+    st.subheader("⚡ المرحلة الثانية: الانتزاع الكهربائي المبرمج (AI-OS)")
+    col3, col4 = st.columns([2, 1])
+    with col3:
+        if scenario == "حالة طوارئ (ترسيب)":
+            st.markdown("<p class='alert-flash'>⚠️ تحذير: اكتشاف بوادر ترسيب على الأغشية! تفعيل القطبية العكسية فوراً.</p>", unsafe_allow_html=True)
+        
+        # رسم بياني متحرك للجهد الكهربائي
+        fig = go.Figure(go.Indicator(
+            mode = "gauge+number+delta",
+            value = 1.8 if scenario == "الوضع الطبيعي" else 2.4,
+            title = {'text': "الجهد التشغيلي (Voltage)"},
+            gauge = {'axis': {'range': [0, 5]}, 'bar': {'color': "darkblue"}}
+        ))
+        st.plotly_chart(fig, use_container_width=True)
+    with col4:
+        st.info("الذكاء الاصطناعي يقوم الآن بموازنة الجهد لضمان أقصى إنتاجية بأقل استهلاك للطاقة.")
+        time.sleep(1)
 
-    # المرحلة 2
-    st.subheader("2️⃣ مرحلة المعالجة والانتزاع الكهربائي (AI-Control)")
-    c3, c4 = st.columns([1, 2])
-    with c3:
-        st.image(GIF_PROCESSING, use_container_width=True)
-    with c4:
-        with st.status("الذكاء الاصطناعي يضبط الجهد الكهربائي...", expanded=True):
-            time.sleep(2)
-            st.write("⚡ الجهد المطبق: 1.45 Volt")
-            st.write("🛡️ حالة الترسيب: منخفضة (تم تفعيل منع الترسيب الذكي)")
+    # المرحلة 3: التجسيد المادي (الجبس)
     st.write("---")
-
-    # المرحلة 3
-    st.subheader("3️⃣ مرحلة إنتاج الجبس (Resource Recovery)")
-    c5, c6 = st.columns([1, 2])
-    with c5:
-        st.image(GIF_GYPSUM, use_container_width=True)
-    with c6:
-        with st.status("جاري تجميع وبلورة الجبس المنتج...", expanded=True):
-            time.sleep(2)
-            st.success("💎 كمية الإنتاج: 12.5 طن / ساعة")
-            st.metric("العائد المادي المتوقع", "$1,500 / hr")
+    st.subheader("💎 المرحلة الثالثة: تحويل النفايات إلى ثروة (الجبس)")
+    col5, col6 = st.columns([1, 1])
+    with col5:
+        st.success("🏗️ جاري ترسيب كبريتات الكالسيوم بنقاء 99%")
+        gyp_prod = 12.5 if scenario != "حالة طوارئ (ترسيب)" else 4.2
+        st.metric("إنتاج الجبس اللحظي", f"{gyp_prod} طن/ساعة")
+    with col6:
+        profit = gyp_prod * 150
+        st.metric("العائد المادي المتوقع (ساعة)", f"${profit:,}")
+        st.write("📈 تم تحقيق عائد إضافي يغطي 30% من تكاليف تشغيل المحطة.")
+    
     st.balloons()
-
-# 5. قسم الأرشفة الدائم (سواء رفعت ملف أو لا)
-st.write("---")
-st.subheader("📂 نظام الأرشفة والتدقيق الرقمي")
-if uploaded_file:
-    df = pd.read_excel(uploaded_file)
-    st.dataframe(df, use_container_width=True)
 else:
-    # عرض البيانات التي أرسلتها في ملفك كنموذج ثابت
-    demo_data = {
-        'كود السجل': ['REQ-2026-001', 'MNT-2026-042', 'LAB-2026-015'],
-        'البيان': ['تحليل TDS', 'صيانة مضخات', 'فحص مختبر'],
-        'الحالة': ['مكتمل', 'قيد المراجعة', 'جاري التدقيق']
-    }
-    st.table(demo_data)
+    st.info("💡 جاهزون للعرض يا دكتور.. اختر سيناريو التشغيل من اليسار واضغط 'إطلاق' لإبهار اللجنة.")
 
-st.caption("نظام مساعدي الذكي | تطوير د. أحمد 2026")
+# الأرشفة الرقمية في الأسفل
+st.write("---")
+with st.expander("📂 نظام الأرشفة الذكي - سجلات REQ/MNT/LAB"):
+    st.write("يتم هنا ربط كافة البيانات الورقية السابقة بالنظام الرقمي الموحد.")
+    st.table(pd.DataFrame({'التاريخ': [pd.Timestamp.now().date()], 'الحالة': ['Active'], 'المستخدم': ['Dr. Ahmed']}))
