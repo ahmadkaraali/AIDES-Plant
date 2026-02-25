@@ -19,82 +19,88 @@ class AIDESEngine:
         voltage = 1.5 if not risk else 1.5 * 0.85
         return si, risk, voltage
 
-# 2. إعدادات الواجهة (الواقعية الصناعية)
+# 2. إعدادات الواجهة (المحافظة على تصميم الصورة المرفقة)
 st.set_page_config(page_title="AIDES Real-time Simulator", layout="wide")
 
 st.markdown("""
     <style>
     .stApp { background-color: #0b0f19; color: white; }
-    /* وضوح الأرقام الفسفوري */
     [data-testid="stMetricValue"] { color: #00ffcc !important; font-weight: bold; font-size: 35px !important; }
-    
-    .process-node { 
-        padding: 15px; border-radius: 10px; border: 2px solid #30363d; text-align: center; background: #161b22;
-    }
-    .flow-line { height: 4px; background: #58a6ff; margin-top: 50px; }
-    .status-box { padding: 10px; border-radius: 5px; font-weight: bold; margin-top: 10px; }
+    .process-node { padding: 15px; border-radius: 10px; border: 2px solid #30363d; text-align: center; background: #161b22; min-height: 120px; }
+    .flow-line { height: 4px; background: #58a6ff; margin-top: 60px; transition: 2s; }
+    .ai-msg { background: #1a1a1a; color: #ffd166; padding: 10px; border-left: 4px solid #ffd166; font-family: monospace; font-size: 14px; margin: 5px 0; }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("🌐 AIDES: Interactive Process Simulator")
-st.write("محاكاة حية لمسار المياه وعملية استعادة الجبس بناءً على التوأم الرقمي")
+st.write("محاكاة حية متسلسلة لمسار المياه وعملية استعادة الجبس")
 
-# المدخلات
 with st.sidebar:
     st.header("🎮 لوحة تحكم المحاكاة")
     tds = st.slider("ملوحة التغذية (ppm)", 5000, 100000, 45000)
     temp = st.slider("الحرارة (°C)", 15, 50, 25)
     profile = st.selectbox("نوع المياه", ["Seawater", "Produced Water"])
-    run = st.button("🚀 تشغيل المحاكاة الحية")
+    run = st.button("🚀 بدء دورة التشغيل النمذجية")
+
+# حاويات العرض (تبدأ فارغة)
+header_cols = st.columns(3)
+m_si = header_cols[0].empty()
+m_v = header_cols[1].empty()
+m_g = header_cols[2].empty()
+
+st.write("---")
+st.subheader("🛠️ تمثيل مسار التدفق (Process Flow)")
+flow_cols = st.columns([2, 0.5, 2, 0.5, 2])
+node1 = flow_cols[0].empty()
+line1 = flow_cols[1].empty()
+node2 = flow_cols[2].empty()
+line2 = flow_cols[3].empty()
+node3 = flow_cols[4].empty()
 
 if run:
     engine = AIDESEngine(profile)
     si, risk, v = engine.calculate(tds, temp)
-
-    # صف الأرقام الواضحة جداً
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Saturation Index (SI)", f"{si:.4f}")
-    c2.metric("Control Voltage", f"{v:.2f} V")
-    c3.metric("Est. Gypsum Yield", f"{(tds*0.04)/1000:.2f} T/h")
-
-    st.write("---")
-    st.subheader("🛠️ تمثيل مسار التدفق (Process Flow)")
-
-    # محاكاة مرئية للمحطة
-    m1, f1, m2, f2, m3 = st.columns([2, 1, 2, 1, 2])
-
-    with m1:
-        st.markdown("<div class='process-node'><b>📥 مدخل مياه التغذية</b><br>تحليل كيميائي مستمر</div>", unsafe_allow_html=True)
+    
+    # --- المرحلة 1: المدخلات ---
+    with node1.container():
+        st.markdown("<div class='process-node'><b>📥 مدخل مياه التغذية</b><br>جاري سحب العينة...</div>", unsafe_allow_html=True)
+        time.sleep(1)
         st.write(f"💧 الملوحة: {tds:,} ppm")
-        st.write("✅ الحساسات تعمل")
+        st.markdown("<p style='color:#00ffcc;'>✅ تم التحليل</p>", unsafe_allow_html=True)
+    
+    # رسالة ذكاء اصطناعي للتحويل
+    st.markdown(f"<div class='ai-msg'>[AI]: تحليل المرحلة 1 مكتمل. قيمة الإشباع المتوقعة SI={si:.2f}. توجيه التدفق للمرحلة 2...</div>", unsafe_allow_html=True)
+    line1.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
+    time.sleep(1.5)
 
-    f1.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
-
-    with m2:
-        # خلية المعالجة الذكية يتغير لونها حسب الخطر
+    # --- المرحلة 2: المعالجة الذكية ---
+    m_si.metric("Saturation Index (SI)", f"{si:.4f}")
+    with node2.container():
         color = "#ff3333" if risk else "#00ffcc"
         st.markdown(f"<div class='process-node' style='border-color:{color}'><b>⚡ خلية AIDES الذكية</b><br>المعالجة والانتزاع</div>", unsafe_allow_html=True)
+        time.sleep(1)
         if risk:
-            st.markdown(f"<div class='status-box' style='background:#721c24; color:#f8d7da;'>⚠️ تنبيه: خطر ترسيب جبس! (SI={si:.2f})<br>تفعيل خفض الجهد..</div>", unsafe_allow_html=True)
+            st.error(f"⚠️ تنبيه: خطر ترسيب! (SI={si:.2f})")
+            st.markdown(f"<div class='ai-msg'>[AI]: تم تفعيل بروتوكول براءة الاختراع. خفض الجهد لـ {v}V لمنع الترسيب.</div>", unsafe_allow_html=True)
         else:
-            st.markdown("<div class='status-box' style='background:#155724; color:#d4edda;'>✅ الحالة: مستقرة<br>كفاءة انتزاع قصوى</div>", unsafe_allow_html=True)
+            st.success("✅ الحالة: مستقرة")
+            st.markdown(f"<div class='ai-msg'>[AI]: استقرار كيميائي مثالي. الحفاظ على جهد {v}V.</div>", unsafe_allow_html=True)
+    
+    m_v.metric("Control Voltage", f"{v:.2f} V")
+    line2.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
+    time.sleep(1.5)
 
-    f2.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
-
-    with m3:
+    # --- المرحلة 3: الإنتاج النهائي ---
+    with node3.container():
         st.markdown("<div class='process-node'><b>🏗️ إنتاج الجبس</b><br>تجميع وتجفيف</div>", unsafe_allow_html=True)
+        time.sleep(1)
+        gyp = (tds * 0.04) / 1000
         st.write(f"💎 النقاء: 99.1%")
-        st.write(f"📦 الإنتاج: {(tds*0.04)/1000:.2f} طن/س")
+        st.write(f"📦 الإنتاج: {gyp:.2f} طن/س")
+    
+    m_g.metric("Est. Gypsum Yield", f"{gyp:.2f} T/h")
+    st.markdown("<div class='ai-msg'>[AI]: اكتملت الدورة التشغيلية بنجاح. تم تسجيل البيانات في الأرشيف السيادي.</div>", unsafe_allow_html=True)
+    st.balloons() # لمسة احتفالية خفيفة بالنهاية
 
-    st.write("---")
-    # منطق الذكاء الاصطناعي (Terminal Style)
-    with st.expander("👁️ عرض منطق اتخاذ القرار (AI Reasoning Hub)"):
-        st.code(f"""
-        [Step 1]: Chemical Analysis Initialized for {profile}
-        [Step 2]: Calculated Ion Product for Ca & SO4
-        [Step 3]: SI ({si:.4f}) vs Threshold ({engine.threshold})
-        [Step 4]: Decision: {'REDUCE POWER' if risk else 'STABILIZE'}
-        [Step 5]: Execution: Voltage set to {v}V
-        """)
 else:
-    st.info("💡 حرك المؤشرات واضغط 'تشغيل المحاكاة' لرؤية كيف يتفاعل النظام مع الواقع.")
+    st.info("💡 النظام في وضع الاستعداد. اضغط على 'بدء دورة التشغيل' لمشاهدة المحاكاة النمذجية.")
