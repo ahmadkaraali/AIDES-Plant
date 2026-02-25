@@ -8,7 +8,7 @@ class AIDESEngine:
         self.K_SP = 2.4e-5
         self.threshold = 0.8 if profile == "Seawater" else 0.6
         self.factor = 1.2 if profile == "Seawater" else 2.0
-        self.flow_rate = 150 # m3/hr (Fixed Operational Flow)
+        self.flow_rate = 150 # m3/hr
 
     def calculate(self, tds, temp):
         # Chemical Calculations for Scaling Risk
@@ -79,4 +79,47 @@ if start_btn:
         time.sleep(1)
         st.write(f"🔹 TDS: {tds_input:,} ppm")
     
-    st.markdown(f"<div class='ai-log'>[AI]: Initializing analysis... SI predicted
+    # إصلاح السطر 82 المسبب للخطأ
+    st.markdown(f"<div class='ai-log'>[AI]: Initializing analysis... SI predicted at {si_res:.2f}. Moving to treatment cell.</div>", unsafe_allow_html=True)
+    l1.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
+    time.sleep(1)
+
+    # PHASE 2: SMART TREATMENT
+    p_si.metric("Saturation Index (SI)", f"{si_res:.4f}")
+    with n2.container():
+        status_color = "#ff3333" if risk_res else "#00ffcc"
+        st.markdown(f"<div class='node-card' style='border-color:{status_color}'><b>⚡ PHASE 2: AIDES CELL</b><br>Ion Recovery & Mitigation</div>", unsafe_allow_html=True)
+        time.sleep(1)
+        if risk_res:
+            st.markdown(f"<div class='ai-log' style='color:red; border-color:red;'>[AI-ALERT]: SCALING RISK DETECTED (High Load). Voltage adjusted to {v_res:.2f}V.</div>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<div class='ai-log'>[AI-SYSTEM]: Scaling Index is stable. Voltage optimized at {v_res:.2f}V.</div>", unsafe_allow_html=True)
+    
+    p_v.metric("Control Voltage", f"{v_res:.2f} V")
+    l2.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
+    time.sleep(1)
+
+    # PHASE 3: HARVESTING
+    with n3.container():
+        st.markdown("<div class='node-card'><b>🏗️ PHASE 3: HARVESTING</b><br>Mineral Recovery Phase</div>", unsafe_allow_html=True)
+        time.sleep(1)
+        st.write(f"💎 Purity: 99.2%")
+        st.write(f"📦 Production: {gyp_res:.3f} T/hr")
+    
+    p_g.metric("Gypsum Yield", f"{gyp_res:.3f} T/h")
+    
+    # FINAL COMPLETION SUMMARY
+    st.write("---")
+    st.markdown(f"""
+        <div class="success-summary">
+            <h2 style="margin:0; color: #238636;">✅ Process Sequence Successfully Completed</h2>
+            <p>AIDES System has successfully mitigated scaling risks and optimized mineral recovery.</p>
+            <small>Session Log ID: AIDES-ENG-2026-{int(time.time())}</small>
+        </div>
+    """, unsafe_allow_html=True)
+
+else:
+    st.info("💡 Standby Mode: Select parameters and press 'Start Sequence' to begin the simulation.")
+
+st.write("---")
+st.caption("AIDES Smart Assistant | Professional Interface 2026")
