@@ -8,28 +8,28 @@ class AIDESEngine:
         self.K_SP = 2.4e-5
         self.threshold = 0.8 if profile == "Seawater" else 0.6
         self.factor = 1.2 if profile == "Seawater" else 2.0
-        self.flow_rate = 150 # m3/hr (Fixed for stability)
+        self.flow_rate = 150 # m3/hr (Scientific Baseline)
 
     def calculate(self, tds, temp):
-        # Chemistry Logic
+        # Chemistry Logic based on Molar Solubility
         ca = (tds / 100000) * 0.02 * self.factor
         so4 = (tds / 100000) * 0.03 * self.factor
         ion_p = ca * so4
         temp_f = 1 + (temp - 25) * 0.01
         si = ion_p / (self.K_SP * temp_f)
         
-        # Scaling Decision
+        # Scaling Decision (The AI Intervention Point)
         risk = si > self.threshold
-        voltage = 1.5 if not risk else 1.5 * 0.85 # Patent Protection Protocol
+        voltage = 1.5 if not risk else 1.5 * 0.85 # Automated Protection Protocol
         
-        # Accurate Gypsum Calculation (Mass Balance)
-        # Yield (kg) = Flow * (TDS/1e6) * Efficiency * Sulfate_Ratio * Conversion_Factor
+        # Accurate Gypsum Calculation (Real-world Mass Balance)
+        # Yield = Flow * Concentration * Efficiency
         gyp_kg_hr = self.flow_rate * (tds / 1000) * 0.05 * 1.72 * 0.9
         gyp_tons = gyp_kg_hr / 1000
         
         return si, risk, voltage, gyp_tons
 
-# 2. UI Configuration (Professional Dark Theme)
+# 2. UI Configuration (Global Professional Standards)
 st.set_page_config(page_title="AIDES Smart Platform", layout="wide")
 
 st.markdown("""
@@ -39,30 +39,30 @@ st.markdown("""
     .node-card { padding: 20px; border-radius: 12px; border: 1px solid #30363d; background: #161b22; text-align: center; min-height: 150px; }
     .flow-line { height: 4px; background: linear-gradient(90deg, #58a6ff, #00ffcc); margin-top: 70px; }
     .ai-log { background: #0d1117; color: #ffd166; padding: 12px; border-left: 4px solid #ffd166; font-family: 'Courier New', monospace; font-size: 13px; margin: 10px 0; }
-    .success-cert { padding: 25px; border: 2px solid #238636; background: rgba(35, 134, 54, 0.1); border-radius: 10px; text-align: center; }
+    .success-summary { padding: 25px; border: 2px solid #238636; background: rgba(35, 134, 54, 0.1); border-radius: 10px; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("🛡️ AIDES: Advanced Mineral Recovery System")
-st.write("Intelligent Process Simulation based on Digital Twin Technology")
+st.write("Intelligent Process Simulation & Scaling Control Technology")
 
 # Sidebar Controls
 with st.sidebar:
-    st.header("🎮 Control Panel")
+    st.header("⚙️ Operational Inputs")
     tds_input = st.slider("Feedwater TDS (ppm)", 5000, 100000, 45000)
     temp_input = st.slider("Temperature (°C)", 15, 50, 25)
-    water_profile = st.selectbox("Water Source Profile", ["Seawater", "Produced Water"])
+    water_profile = st.selectbox("Feedwater Source", ["Seawater", "Produced Water"])
     st.markdown("---")
-    start_btn = st.button("🚀 Execute Sequence")
+    start_btn = st.button("🚀 Start Sequence")
 
-# Display Placeholders
+# Display Metrics (Start Empty)
 m_cols = st.columns(3)
 p_si = m_cols[0].empty()
 p_v = m_cols[1].empty()
 p_g = m_cols[2].empty()
 
 st.write("---")
-st.subheader("⚙️ Process Flow Simulation")
+st.subheader("📊 Dynamic Process Simulation")
 f_cols = st.columns([2, 0.5, 2, 0.5, 2])
 n1 = f_cols[0].empty()
 l1 = f_cols[1].empty()
@@ -74,53 +74,12 @@ if start_btn:
     engine = AIDESEngine(water_profile)
     si_res, risk_res, v_res, gyp_res = engine.calculate(tds_input, temp_input)
     
-    # PHASE 1: Intake
+    # --- PHASE 1: INTAKE ---
     with n1.container():
-        st.markdown("<div class='node-card'><b>📥 PHASE 1: INTAKE</b><br>Analyzing Feedwater...</div>", unsafe_allow_html=True)
+        st.markdown("<div class='node-card'><b>📥 PHASE 1: INTAKE</b><br>Chemical Fingerprinting...</div>", unsafe_allow_html=True)
         time.sleep(1)
-        st.write(f"🔹 TDS: {tds_input:,} ppm")
-        st.markdown("<p style='color:#58a6ff;'>✅ Sensors Online</p>", unsafe_allow_html=True)
+        st.write(f"💧 Salinity: {tds_input:,} ppm")
     
-    st.markdown(f"<div class='ai-log'>[AI-SYSTEM]: Analyzing ion concentrations... Estimated SI: {si_res:.2f}. Proceeding to Treatment.</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='ai-log'>[AI]: Ion balance analyzed. Expected SI: {si_res:.2f}. Directing flow to Treatment Cell.</div>", unsafe_allow_html=True)
     l1.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
-    time.sleep(1.2)
-
-    # PHASE 2: Treatment
-    p_si.metric("Saturation Index (SI)", f"{si_res:.4f}")
-    with n2.container():
-        status_color = "#ff3333" if risk_res else "#00ffcc"
-        st.markdown(f"<div class='node-card' style='border-color:{status_color}'><b>⚡ PHASE 2: AIDES CELL</b><br>Ion Extraction & Control</div>", unsafe_allow_html=True)
-        time.sleep(1)
-        if risk_res:
-            st.markdown(f"<div class='ai-log' style='border-color:red; color:red;'>[AI-ALERT]: SCALING RISK DETECTED! Activating Protection Protocol. Voltage adjusted to {v_res:.2f}V.</div>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<div class='ai-log'>[AI-SYSTEM]: Scaling index within safe limits. Optimizing Voltage for max yield.</div>", unsafe_allow_html=True)
-    
-    p_v.metric("Control Voltage", f"{v_res:.2f} V")
-    l2.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
-    time.sleep(1.2)
-
-    # PHASE 3: Recovery
-    with n3.container():
-        st.markdown("<div class='node-card'><b>🏗️ PHASE 3: RECOVERY</b><br>Gypsum Mineral Harvesting</div>", unsafe_allow_html=True)
-        time.sleep(1)
-        st.write(f"💎 Purity: 99.2%")
-        st.write(f"📦 Yield: {gyp_res:.3f} T/hr")
-    
-    p_g.metric("Gypsum Production", f"{gyp_res:.3f} T/h")
-    
-    # FINAL COMPLETION (Official)
-    st.write("---")
-    st.markdown(f"""
-        <div class="success-cert">
-            <h2 style="margin:0; color: #238636;">✅ Process Sequence Completed</h2>
-            <p>All operational parameters have been successfully validated and archived.</p>
-            <small>Reference ID: AIDES-ENG-{int(time.time())}</small>
-        </div>
-    """, unsafe_allow_html=True)
-
-else:
-    st.info("💡 Ready for operation. Press 'Execute Sequence' to start the industrial simulation.")
-
-st.write("---")
-st.caption("AIDES Smart Assistant | Professional Interface 2026")
+    time.
