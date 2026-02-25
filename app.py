@@ -2,79 +2,85 @@ import streamlit as st
 import time
 import pandas as pd
 
-# 1. إعدادات المنصة
-st.set_page_config(page_title="AIDES Executive Control", layout="wide", page_icon="⚙️")
+# إعدادات المنصة
+st.set_page_config(page_title="AIDES Intelligent Workflow", layout="wide", page_icon="🧠")
 
+# تنسيق CSS للمراحل (تأثير الإضاءة للمرحلة النشطة)
 st.markdown("""
     <style>
-    .stApp { background-color: #f4f7f6; }
-    .success-banner {
-        padding: 20px;
-        border: 2px solid #1e7e34;
-        background-color: #d4edda;
-        color: #155724;
-        border-radius: 10px;
-        text-align: center;
-        font-family: 'Arial';
-    }
-    .report-id { font-size: 12px; color: #6c757d; float: right; }
+    .active-step { border: 2px solid #0077b6; background-color: #e1f5fe; border-radius: 15px; padding: 20px; box-shadow: 0px 0px 15px #0077b6; }
+    .inactive-step { opacity: 0.3; filter: grayscale(100%); padding: 20px; }
+    .ai-decision-box { background-color: #1a1a1a; color: #00ff00; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; margin: 10px 0; font-size: 14px; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🕹️ المركز السيادي للتحكم - نظام AIDES")
+st.title("🏭 نظام التدفق الذكي المتسلسل (AIDES Engine)")
 st.write("---")
 
-# 2. لوحة التحكم الجانبية
-st.sidebar.header("🛠️ إعدادات المشغل")
-op_mode = st.sidebar.radio("نمط التشغيل:", ["التحكم الذكي (AI Auto)", "التحكم اليدوي (Manual)"])
-input_tds = st.sidebar.slider("الملوحة (ppm):", 5000, 70000, 35000)
-input_flow = st.sidebar.slider("التدفق (m³/h):", 50, 500, 150)
-start_op = st.sidebar.button("🚀 تنفيذ الأوامر التشغيلية")
+# لوحة تحكم المشغل
+st.sidebar.header("🕹️ لوحة التحكم")
+input_tds = st.sidebar.slider("تركيز الملوحة (ppm):", 5000, 70000, 35000)
+start_process = st.sidebar.button("🚀 بدء دورة التشغيل الذكية")
 
-# 3. المنطق الرياضي
-gyp_calc = (input_tds * input_flow) / 500000
-voltage = 1.2 + (input_tds / 50000)
+# أيقونات المراحل
+ICON_INTAKE = "https://cdn.dribbble.com/users/135061/screenshots/4332560/media/765089c23577317e1451e5e0500411a7.gif"
+ICON_AI = "https://cdn.dribbble.com/users/244440/screenshots/2361250/media/1d9b324391672323e98188172828b1a9.gif"
+ICON_PROD = "https://cdn.dribbble.com/users/1162077/screenshots/3848914/media/4e7d95d18d8a7a938c8c50c18d890b0e.gif"
 
-# 4. تنفيذ العرض
-if start_op:
-    # عرض المراحل الأفقية
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.info("📦 مدخلات النظام")
-        st.metric("الملوحة", f"{input_tds:,}")
-        
-    with col2:
-        st.warning("⚡ معالجة AIDES")
-        st.metric("الجهد", f"{voltage:.2f} V")
-        
-    with col3:
-        st.success("🏗️ مخرجات الإنتاج")
-        st.metric("الجبس المستعاد", f"{gyp_calc:.2f} t/h")
+if start_process:
+    # إنشاء حاويات للمراحل الثلاث
+    p1 = st.empty()
+    p_ai_1 = st.empty()
+    p2 = st.empty()
+    p_ai_2 = st.empty()
+    p3 = st.empty()
+    final_report = st.empty()
 
-    st.write("---")
-    
-    # --- البديل الرسمي للبالونات (ختم الاعتماد) ---
-    st.markdown(f"""
-        <div class="success-banner">
-            <span class="report-id">Ref: AIDES-{int(time.time())}</span>
-            <h2 style="margin:0;">✅ تم إكمال الدورة التشغيلية بنجاح</h2>
-            <p>جميع المعايير ضمن النطاق المسموح به - تم أرشفة البيانات في السجل السيادي</p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # رسالة نجاح هادئة من ستريمليت
-    st.toast("تم تحديث السجلات بنجاح", icon='✅')
+    # --- المرحلة 1: المدخلات ---
+    with p1.container():
+        st.markdown("<div class='active-step'>", unsafe_allow_html=True)
+        col_a, col_b = st.columns([1, 3])
+        col_a.image(ICON_INTAKE, width=100)
+        col_b.subheader("المرحلة 1: سحب وتحليل مياه التغذية")
+        col_b.write(f"🔍 يتم الآن فحص الأيونات... الملوحة الحالية: {input_tds} ppm")
+        st.markdown("</div>", unsafe_allow_html=True)
+    time.sleep(2)
 
-else:
-    st.info("💡 قم بضبط الإعدادات واضغط 'تنفيذ' لبدء المحاكاة الرسمية.")
+    # --- قرار الذكاء الاصطناعي 1 ---
+    with p_ai_1.container():
+        st.markdown(f"""<div class='ai-decision-box'>
+        [AI LOG]: تم استلام بيانات المرحلة 1... <br>
+        [AI LOG]: تحليل مخاطر الترسيب: {(input_tds/700):.2f}% <br>
+        [AI LOG]: تم حساب الجهد الأمثل. توجيه الأوامر لوحدة المعالجة... ✅
+        </div>""", unsafe_allow_html=True)
+    time.sleep(1.5)
 
-# 5. السجلات
-st.write("---")
-with st.expander("📂 سجل قرارات المشغل (Digital Archive)"):
-    st.table(pd.DataFrame({
-        'البارامتر': ['الوقت', 'النمط', 'الحالة'],
-        'القيمة': [time.strftime("%H:%M:%S"), op_mode, 'Validated']
-    }))
+    # --- المرحلة 2: المعالجة ---
+    with p2.container():
+        st.markdown("<div class='active-step'>", unsafe_allow_html=True)
+        col_c, col_d = st.columns([1, 3])
+        col_c.image(ICON_AI, width=100)
+        col_d.subheader("المرحلة 2: معالجة AIDES (الانتزاع الكهربائي)")
+        voltage = 1.2 + (input_tds/50000)
+        col_d.write(f"⚡ يتم تطبيق جهد كهربائي بقدرة: {voltage:.2f} V")
+        st.markdown("</div>", unsafe_allow_html=True)
+    time.sleep(2)
 
-st.caption("نظام المساعد الذكي | الإصدار المهني 2026")
+    # --- قرار الذكاء الاصطناعي 2 ---
+    with p_ai_2.container():
+        st.markdown(f"""<div class='ai-decision-box'>
+        [AI LOG]: جاري مراقبة استقرار التيار... مستقر ✅ <br>
+        [AI LOG]: تم فصل كبريتات الكالسيوم بنجاح. <br>
+        [AI LOG]: تفعيل خط إنتاج الجبس...
+        </div>""", unsafe_allow_html=True)
+    time.sleep(1.5)
+
+    # --- المرحلة 3: المخرجات ---
+    with p3.container():
+        st.markdown("<div class='active-step'>", unsafe_allow_html=True)
+        col_e, col_f = st.columns([1, 3])
+        col_e.image(ICON_PROD, width=100)
+        col_f.subheader("المرحلة 3: استعادة الجبس النهائي")
+        gyp = (input_tds * 150) / 500000
+        col_f.write(f"🏗️ الإنتاج الحالي: {gyp:.2f} طن/ساعة")
+        st.markdown("</div>", unsafe_
