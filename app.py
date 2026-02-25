@@ -1,87 +1,58 @@
 import streamlit as st
 import time
 import pandas as pd
-import plotly.graph_objects as go
 
-# إعدادات الواجهة الفاخرة
-st.set_page_config(page_title="AIDES Hyper-Visual Platform", layout="wide", page_icon="🏗️")
+# 1. إعدادات المنصة الاحترافية
+st.set_page_config(page_title="AIDES 3D Control Center", layout="wide", page_icon="💎")
 
-# CSS لإضافة تأثيرات جمالية (تدرج ألوان واهتزاز بسيط للتنبيهات)
+# CSS لتحسين المظهر وجعل الأيقونات تبدو ثلاثية الأبعاد ونظيفة
 st.markdown("""
     <style>
-    .reportview-container { background: linear-gradient(to right, #ece9e6, #ffffff); }
-    .stMetric { border-left: 5px solid #005f73; background-color: #f8f9fa; }
-    @keyframes blinker { 50% { opacity: 0; } }
-    .alert-flash { color: red; animation: blinker 1s linear infinite; font-weight: bold; }
+    .stApp { background-color: #ffffff; }
+    .icon-box { text-align: center; padding: 20px; border-radius: 15px; background: #f0f4f8; border: 1px solid #d1d9e6; box-shadow: 5px 5px 15px #b8b9be, -5px -5px 15px #ffffff; }
+    .step-label { font-weight: bold; color: #1a3a5f; font-size: 18px; margin-top: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🏗️ المركز السيادي للتحكم الذكي | AIDES Hyper-Platform")
-st.markdown("<p style='font-size: 20px; color: #555;'>نظام إدارة الموارد المتكاملة: تحلية المياه واستعادة المعادن</p>", unsafe_allow_html=True)
+st.title("🏗️ نظام AIDES: خط الإنتاج الذكي الموحد")
 st.write("---")
 
-# روابط وسائط عالية الجودة (عناصر متحركة)
-GIF_MOLECULES = "https://cdn.dribbble.com/users/244440/screenshots/2361250/media/1d9b324391672323e98188172828b1a9.gif" # محاكاة حركة الجزيئات
-GIF_CONTROL_ROOM = "https://cdn.dribbble.com/users/1059583/screenshots/3944634/media/f38f71261d713c706d33454224c30c82.gif" # غرفة التحكم
+# 2. روابط الأيقونات ثلاثية الأبعاد (3D Animated Icons)
+ICON_WATER = "https://cdn.dribbble.com/users/135061/screenshots/4332560/media/765089c23577317e1451e5e0500411a7.gif" # أيقونة ماء 3D
+ICON_CHIP = "https://cdn.dribbble.com/users/4181/screenshots/3685361/media/25291244e8d386c99c279c05e5d36561.gif" # أيقونة معالجة ذكية 3D
+ICON_DIAMOND = "https://cdn.dribbble.com/users/1162077/screenshots/3848914/media/4e7d95d18d8a7a938c8c50c18d890b0e.gif" # أيقونة منتج/جبس 3D
 
-# القائمة الجانبية
-st.sidebar.image(GIF_CONTROL_ROOM, use_container_width=True)
-st.sidebar.header("🕹️ التحكم في السيناريو التشغيلي")
-scenario = st.sidebar.selectbox("اختر وضع التشغيل:", ["الوضع الطبيعي", "وضع الملوحة العالية", "حالة طوارئ (ترسيب)"])
-run_btn = st.sidebar.button("🚀 إطلاق المحاكاة الشاملة")
+# 3. لوحة التحكم الجانبية
+st.sidebar.header("🕹️ التحكم في العرض")
+start_sim = st.sidebar.button("🚀 بدء دورة الإنتاج الأفقي")
 
-if run_btn:
-    # المرحلة 1: التحليل الكيميائي الرقمي
-    st.subheader("🔍 المرحلة الأولى: الاستشعار الكيميائي المتقدم")
-    col1, col2 = st.columns([1, 2])
+# 4. التوزيع الأفقي للمراحل
+if start_sim:
+    # إنشاء 3 أعمدة لتوزيع أفقي
+    col1, col2, col3 = st.columns(3)
+
+    # --- المرحلة الأولى (Intake) ---
     with col1:
-        st.image(GIF_MOLECULES, caption="محاكاة حركة الأيونات في المحلول", use_container_width=True)
+        st.markdown("<div class='icon-box'>", unsafe_allow_html=True)
+        st.image(ICON_WATER, use_container_width=True)
+        st.markdown("<p class='step-label'>1. تحليل المياه الخام</p>", unsafe_allow_html=True)
+        with st.status("جاري الفحص...", expanded=True):
+            time.sleep(1)
+            st.write("💧 TDS: 35,000 ppm")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- المرحلة الثانية (Processing) ---
     with col2:
-        st.write("### تحليل التدفق الحقيقي")
-        tds_val = 35000 if scenario == "الوضع الطبيعي" else 65000
-        st.progress(0.4)
-        st.metric("تركيز الأملاح الحالي", f"{tds_val} ppm", delta="حالة مستقرة" if tds_val < 40000 else "حرجة", delta_color="inverse")
-        time.sleep(1)
+        st.markdown("<div class='icon-box'>", unsafe_allow_html=True)
+        st.image(ICON_CHIP, use_container_width=True)
+        st.markdown("<p class='step-label'>2. المعالجة الذكية AIDES</p>", unsafe_allow_html=True)
+        with st.status("ضبط الجهد...", expanded=True):
+            time.sleep(2)
+            st.write("⚡ Voltage: 1.45V")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # المرحلة 2: المعالجة الذكية (قلب النظام)
-    st.write("---")
-    st.subheader("⚡ المرحلة الثانية: الانتزاع الكهربائي المبرمج (AI-OS)")
-    col3, col4 = st.columns([2, 1])
+    # --- المرحلة الثالثة (Output) ---
     with col3:
-        if scenario == "حالة طوارئ (ترسيب)":
-            st.markdown("<p class='alert-flash'>⚠️ تحذير: اكتشاف بوادر ترسيب على الأغشية! تفعيل القطبية العكسية فوراً.</p>", unsafe_allow_html=True)
-        
-        # رسم بياني متحرك للجهد الكهربائي
-        fig = go.Figure(go.Indicator(
-            mode = "gauge+number+delta",
-            value = 1.8 if scenario == "الوضع الطبيعي" else 2.4,
-            title = {'text': "الجهد التشغيلي (Voltage)"},
-            gauge = {'axis': {'range': [0, 5]}, 'bar': {'color': "darkblue"}}
-        ))
-        st.plotly_chart(fig, use_container_width=True)
-    with col4:
-        st.info("الذكاء الاصطناعي يقوم الآن بموازنة الجهد لضمان أقصى إنتاجية بأقل استهلاك للطاقة.")
-        time.sleep(1)
-
-    # المرحلة 3: التجسيد المادي (الجبس)
-    st.write("---")
-    st.subheader("💎 المرحلة الثالثة: تحويل النفايات إلى ثروة (الجبس)")
-    col5, col6 = st.columns([1, 1])
-    with col5:
-        st.success("🏗️ جاري ترسيب كبريتات الكالسيوم بنقاء 99%")
-        gyp_prod = 12.5 if scenario != "حالة طوارئ (ترسيب)" else 4.2
-        st.metric("إنتاج الجبس اللحظي", f"{gyp_prod} طن/ساعة")
-    with col6:
-        profit = gyp_prod * 150
-        st.metric("العائد المادي المتوقع (ساعة)", f"${profit:,}")
-        st.write("📈 تم تحقيق عائد إضافي يغطي 30% من تكاليف تشغيل المحطة.")
-    
-    st.balloons()
-else:
-    st.info("💡 جاهزون للعرض يا دكتور.. اختر سيناريو التشغيل من اليسار واضغط 'إطلاق' لإبهار اللجنة.")
-
-# الأرشفة الرقمية في الأسفل
-st.write("---")
-with st.expander("📂 نظام الأرشفة الذكي - سجلات REQ/MNT/LAB"):
-    st.write("يتم هنا ربط كافة البيانات الورقية السابقة بالنظام الرقمي الموحد.")
-    st.table(pd.DataFrame({'التاريخ': [pd.Timestamp.now().date()], 'الحالة': ['Active'], 'المستخدم': ['Dr. Ahmed']}))
+        st.markdown("<div class='icon-box'>", unsafe_allow_html=True)
+        st.image(ICON_DIAMOND, use_container_width=True)
+        st.markdown("<p class='step
