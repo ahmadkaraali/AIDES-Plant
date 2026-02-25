@@ -8,28 +8,27 @@ class AIDESEngine:
         self.K_SP = 2.4e-5
         self.threshold = 0.8 if profile == "Seawater" else 0.6
         self.factor = 1.2 if profile == "Seawater" else 2.0
-        self.flow_rate = 150 # m3/hr (Scientific Baseline)
+        self.flow_rate = 150 # m3/hr (Fixed Operational Flow)
 
     def calculate(self, tds, temp):
-        # Chemistry Logic based on Molar Solubility
+        # Chemical Calculations for Scaling Risk
         ca = (tds / 100000) * 0.02 * self.factor
         so4 = (tds / 100000) * 0.03 * self.factor
         ion_p = ca * so4
         temp_f = 1 + (temp - 25) * 0.01
         si = ion_p / (self.K_SP * temp_f)
         
-        # Scaling Decision (The AI Intervention Point)
+        # Scaling Risk Protocol
         risk = si > self.threshold
-        voltage = 1.5 if not risk else 1.5 * 0.85 # Automated Protection Protocol
+        voltage = 1.5 if not risk else 1.5 * 0.85
         
-        # Accurate Gypsum Calculation (Real-world Mass Balance)
-        # Yield = Flow * Concentration * Efficiency
+        # Accurate Gypsum Yield (Mass Balance)
         gyp_kg_hr = self.flow_rate * (tds / 1000) * 0.05 * 1.72 * 0.9
         gyp_tons = gyp_kg_hr / 1000
         
         return si, risk, voltage, gyp_tons
 
-# 2. UI Configuration (Global Professional Standards)
+# 2. UI Configuration
 st.set_page_config(page_title="AIDES Smart Platform", layout="wide")
 
 st.markdown("""
@@ -55,7 +54,7 @@ with st.sidebar:
     st.markdown("---")
     start_btn = st.button("🚀 Start Sequence")
 
-# Display Metrics (Start Empty)
+# Display Metrics
 m_cols = st.columns(3)
 p_si = m_cols[0].empty()
 p_v = m_cols[1].empty()
@@ -74,12 +73,10 @@ if start_btn:
     engine = AIDESEngine(water_profile)
     si_res, risk_res, v_res, gyp_res = engine.calculate(tds_input, temp_input)
     
-    # --- PHASE 1: INTAKE ---
+    # PHASE 1: INTAKE
     with n1.container():
         st.markdown("<div class='node-card'><b>📥 PHASE 1: INTAKE</b><br>Chemical Fingerprinting...</div>", unsafe_allow_html=True)
         time.sleep(1)
-        st.write(f"💧 Salinity: {tds_input:,} ppm")
+        st.write(f"🔹 TDS: {tds_input:,} ppm")
     
-    st.markdown(f"<div class='ai-log'>[AI]: Ion balance analyzed. Expected SI: {si_res:.2f}. Directing flow to Treatment Cell.</div>", unsafe_allow_html=True)
-    l1.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
-    time.
+    st.markdown(f"<div class='ai-log'>[AI]: Initializing analysis... SI predicted
