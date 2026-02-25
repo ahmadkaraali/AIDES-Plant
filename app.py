@@ -1,115 +1,100 @@
 import streamlit as st
 import time
 import pandas as pd
-import plotly.graph_objects as go
 
 # 1. النواة الهندسية (كود الدكتور أحمد)
-class AIDESControlEngine:
-    def __init__(self, profile_name):
-        self.profile_name = profile_name
-        self.K_SP_GYPSUM = 2.4e-5
-        self.settings = {
-            "Seawater": {"factor": 1.2, "threshold": 0.8, "base_v": 1.5},
-            "Produced Water": {"factor": 2.0, "threshold": 0.6, "base_v": 2.0}
-        }
-        self.curr = self.settings[profile_name]
+class AIDESEngine:
+    def __init__(self, profile):
+        self.K_SP = 2.4e-5
+        self.threshold = 0.8 if profile == "Seawater" else 0.6
+        self.factor = 1.2 if profile == "Seawater" else 2.0
 
-    def analyze(self, tds, temp):
-        ca_conc = (tds / 100000) * 0.02 * self.curr["factor"]
-        so4_conc = (tds / 100000) * 0.03 * self.curr["factor"]
-        ion_product = ca_conc * so4_conc
-        temp_factor = 1 + (temp - 25) * 0.01
-        s_index = ion_product / (self.K_SP_GYPSUM * temp_factor)
-        risk = "CRITICAL" if s_index > self.curr["threshold"] else "SAFE"
-        v = self.curr["base_v"]
-        if tds > 40000: v += (tds - 40000) * 0.00005
-        if risk == "CRITICAL": v *= 0.85 
-        return s_index, risk, v
+    def calculate(self, tds, temp):
+        ca = (tds / 100000) * 0.02 * self.factor
+        so4 = (tds / 100000) * 0.03 * self.factor
+        ion_p = ca * so4
+        temp_f = 1 + (temp - 25) * 0.01
+        si = ion_p / (self.K_SP * temp_f)
+        risk = si > self.threshold
+        voltage = 1.5 if not risk else 1.5 * 0.85
+        return si, risk, voltage
 
-# 2. تحسينات الواجهة (ألوان زاهية وخطوط واضحة)
-st.set_page_config(page_title="AIDES Digital Twin", layout="wide")
+# 2. إعدادات الواجهة (الواقعية الصناعية)
+st.set_page_config(page_title="AIDES Real-time Simulator", layout="wide")
 
 st.markdown("""
     <style>
-    /* جعل الخلفية داكنة احترافية */
-    .stApp { background-color: #050505; color: white; }
+    .stApp { background-color: #0b0f19; color: white; }
+    /* وضوح الأرقام الفسفوري */
+    [data-testid="stMetricValue"] { color: #00ffcc !important; font-weight: bold; font-size: 35px !important; }
     
-    /* تحسين وضوح الأرقام في المربعات (Metrics) */
-    [data-testid="stMetricValue"] {
-        color: #00ffcc !important; /* لون فسفوري واضح جداً */
-        font-size: 40px !important;
-        font-weight: bold !important;
+    .process-node { 
+        padding: 15px; border-radius: 10px; border: 2px solid #30363d; text-align: center; background: #161b22;
     }
-    [data-testid="stMetricLabel"] {
-        color: #ffffff !important;
-        font-size: 18px !important;
-    }
-    .decision-panel { 
-        background-color: #101010; 
-        border-left: 5px solid #00ffcc; 
-        padding: 20px; 
-        font-family: 'Consolas', monospace; 
-        color: #00ffcc;
-        line-height: 1.5;
-    }
+    .flow-line { height: 4px; background: #58a6ff; margin-top: 50px; }
+    .status-box { padding: 10px; border-radius: 5px; font-weight: bold; margin-top: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🛡️ AIDES: Digital Twin Command Center")
-st.write("الجيل القادم من أنظمة التحكم الكيميائي الذكي")
+st.title("🌐 AIDES: Interactive Process Simulator")
+st.write("محاكاة حية لمسار المياه وعملية استعادة الجبس بناءً على التوأم الرقمي")
 
+# المدخلات
 with st.sidebar:
-    st.header("📡 Live Sensor Data")
-    tds = st.slider("TDS (ppm)", 5000, 100000, 45000)
-    temp = st.slider("Temperature (°C)", 15, 50, 25)
-    p_type = st.selectbox("Feedwater Profile", ["Seawater", "Produced Water"])
-    st.markdown("---")
-    run_engine = st.button("🚀 تفعيل النظام الذكي")
+    st.header("🎮 لوحة تحكم المحاكاة")
+    tds = st.slider("ملوحة التغذية (ppm)", 5000, 100000, 45000)
+    temp = st.slider("الحرارة (°C)", 15, 50, 25)
+    profile = st.selectbox("نوع المياه", ["Seawater", "Produced Water"])
+    run = st.button("🚀 تشغيل المحاكاة الحية")
 
-if run_engine:
-    engine = AIDESControlEngine(p_type)
-    s_index, risk, v = engine.analyze(tds, temp)
+if run:
+    engine = AIDESEngine(profile)
+    si, risk, v = engine.calculate(tds, temp)
 
-    # صف المؤشرات بوضوح عالي
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Saturation Index", f"{s_index:.4f}")
-    c2.metric("Target Voltage", f"{v:.2f} V")
-    c3.metric("System Status", risk)
-    c4.metric("Est. Production", f"{(tds*0.04)/1000:.2f} T/h")
+    # صف الأرقام الواضحة جداً
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Saturation Index (SI)", f"{si:.4f}")
+    c2.metric("Control Voltage", f"{v:.2f} V")
+    c3.metric("Est. Gypsum Yield", f"{(tds*0.04)/1000:.2f} T/h")
 
     st.write("---")
+    st.subheader("🛠️ تمثيل مسار التدفق (Process Flow)")
 
-    col_left, col_right = st.columns([2, 1])
+    # محاكاة مرئية للمحطة
+    m1, f1, m2, f2, m3 = st.columns([2, 1, 2, 1, 2])
 
-    with col_left:
-        st.subheader("📈 التحليل الديناميكي للترسيب")
-        # رسم بياني احترافي يوضح العلاقة
-        fig = go.Figure()
-        fig.add_trace(go.Bar(name='Saturation Index', x=['Current State'], y=[s_index], marker_color='#00ffcc'))
-        fig.add_trace(go.Scatter(name='Critical Threshold', x=['Current State'], y=[engine.curr["threshold"]], mode='lines+markers', marker_color='red'))
-        fig.update_layout(template="plotly_dark", height=350)
-        st.plotly_chart(fig, use_container_width=True)
+    with m1:
+        st.markdown("<div class='process-node'><b>📥 مدخل مياه التغذية</b><br>تحليل كيميائي مستمر</div>", unsafe_allow_html=True)
+        st.write(f"💧 الملوحة: {tds:,} ppm")
+        st.write("✅ الحساسات تعمل")
 
-    with col_right:
-        st.subheader("🧠 منطق الذكاء الاصطناعي")
-        st.markdown(f"""
-        <div class='decision-panel'>
-        > ANALYZING CHEMICAL DATA...<br>
-        > ION PRODUCT CALCULATED.<br>
-        > Ksp LIMIT: 2.4e-5<br>
-        > STATUS: <span style='color:{"red" if risk=="CRITICAL" else "#00ffcc"}'>{risk}</span><br>
-        > ACTION: {'ADJUSTING VOLTAGE' if risk=="CRITICAL" else 'MAXIMIZING YIELD'}<br>
-        > OUTPUT V: {v:.2f}V
-        </div>
-        """, unsafe_allow_html=True)
+    f1.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
 
-    if risk == "CRITICAL":
-        st.warning(f"⚠️ تم اكتشاف خطر ترسيب! النظام قام بتفعيل بروتوكول براءة الاختراع وخفض الجهد إلى {v:.2f}V")
-    else:
-        st.success("✅ النظام يعمل بكفاءة إنتاجية قصوى.")
+    with m2:
+        # خلية المعالجة الذكية يتغير لونها حسب الخطر
+        color = "#ff3333" if risk else "#00ffcc"
+        st.markdown(f"<div class='process-node' style='border-color:{color}'><b>⚡ خلية AIDES الذكية</b><br>المعالجة والانتزاع</div>", unsafe_allow_html=True)
+        if risk:
+            st.markdown(f"<div class='status-box' style='background:#721c24; color:#f8d7da;'>⚠️ تنبيه: خطر ترسيب جبس! (SI={si:.2f})<br>تفعيل خفض الجهد..</div>", unsafe_allow_html=True)
+        else:
+            st.markdown("<div class='status-box' style='background:#155724; color:#d4edda;'>✅ الحالة: مستقرة<br>كفاءة انتزاع قصوى</div>", unsafe_allow_html=True)
 
+    f2.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
+
+    with m3:
+        st.markdown("<div class='process-node'><b>🏗️ إنتاج الجبس</b><br>تجميع وتجفيف</div>", unsafe_allow_html=True)
+        st.write(f"💎 النقاء: 99.1%")
+        st.write(f"📦 الإنتاج: {(tds*0.04)/1000:.2f} طن/س")
+
+    st.write("---")
+    # منطق الذكاء الاصطناعي (Terminal Style)
+    with st.expander("👁️ عرض منطق اتخاذ القرار (AI Reasoning Hub)"):
+        st.code(f"""
+        [Step 1]: Chemical Analysis Initialized for {profile}
+        [Step 2]: Calculated Ion Product for Ca & SO4
+        [Step 3]: SI ({si:.4f}) vs Threshold ({engine.threshold})
+        [Step 4]: Decision: {'REDUCE POWER' if risk else 'STABILIZE'}
+        [Step 5]: Execution: Voltage set to {v}V
+        """)
 else:
-    st.info("💡 بانتظار إشارة البدء لعرض بيانات التوأم الرقمي...")
-
-st.write("---")
-st.caption("AIDES Smart Platform | تصميم وتطوير د. أحمد 2026")
+    st.info("💡 حرك المؤشرات واضغط 'تشغيل المحاكاة' لرؤية كيف يتفاعل النظام مع الواقع.")
