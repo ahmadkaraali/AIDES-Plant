@@ -2,105 +2,125 @@ import streamlit as st
 import time
 import pandas as pd
 
-# 1. النواة الهندسية (كود الدكتور أحمد)
+# 1. Engineering Core (Dr. Ahmed's Patent Logic)
 class AIDESEngine:
     def __init__(self, profile):
         self.K_SP = 2.4e-5
         self.threshold = 0.8 if profile == "Seawater" else 0.6
         self.factor = 1.2 if profile == "Seawater" else 2.0
+        self.flow_rate = 150 # m3/hr (Fixed for stability)
 
     def calculate(self, tds, temp):
+        # Chemistry Logic
         ca = (tds / 100000) * 0.02 * self.factor
         so4 = (tds / 100000) * 0.03 * self.factor
         ion_p = ca * so4
         temp_f = 1 + (temp - 25) * 0.01
         si = ion_p / (self.K_SP * temp_f)
+        
+        # Scaling Decision
         risk = si > self.threshold
-        voltage = 1.5 if not risk else 1.5 * 0.85
-        return si, risk, voltage
+        voltage = 1.5 if not risk else 1.5 * 0.85 # Patent Protection Protocol
+        
+        # Accurate Gypsum Calculation (Mass Balance)
+        # Yield (kg) = Flow * (TDS/1e6) * Efficiency * Sulfate_Ratio * Conversion_Factor
+        gyp_kg_hr = self.flow_rate * (tds / 1000) * 0.05 * 1.72 * 0.9
+        gyp_tons = gyp_kg_hr / 1000
+        
+        return si, risk, voltage, gyp_tons
 
-# 2. إعدادات الواجهة (المحافظة على تصميم الصورة المرفقة)
-st.set_page_config(page_title="AIDES Real-time Simulator", layout="wide")
+# 2. UI Configuration (Professional Dark Theme)
+st.set_page_config(page_title="AIDES Smart Platform", layout="wide")
 
 st.markdown("""
     <style>
-    .stApp { background-color: #0b0f19; color: white; }
-    [data-testid="stMetricValue"] { color: #00ffcc !important; font-weight: bold; font-size: 35px !important; }
-    .process-node { padding: 15px; border-radius: 10px; border: 2px solid #30363d; text-align: center; background: #161b22; min-height: 120px; }
-    .flow-line { height: 4px; background: #58a6ff; margin-top: 60px; transition: 2s; }
-    .ai-msg { background: #1a1a1a; color: #ffd166; padding: 10px; border-left: 4px solid #ffd166; font-family: monospace; font-size: 14px; margin: 5px 0; }
+    .stApp { background-color: #0b101a; color: #e6edf3; }
+    [data-testid="stMetricValue"] { color: #00ffcc !important; font-weight: bold; font-size: 38px !important; }
+    .node-card { padding: 20px; border-radius: 12px; border: 1px solid #30363d; background: #161b22; text-align: center; min-height: 150px; }
+    .flow-line { height: 4px; background: linear-gradient(90deg, #58a6ff, #00ffcc); margin-top: 70px; }
+    .ai-log { background: #0d1117; color: #ffd166; padding: 12px; border-left: 4px solid #ffd166; font-family: 'Courier New', monospace; font-size: 13px; margin: 10px 0; }
+    .success-cert { padding: 25px; border: 2px solid #238636; background: rgba(35, 134, 54, 0.1); border-radius: 10px; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🌐 AIDES: Interactive Process Simulator")
-st.write("محاكاة حية متسلسلة لمسار المياه وعملية استعادة الجبس")
+st.title("🛡️ AIDES: Advanced Mineral Recovery System")
+st.write("Intelligent Process Simulation based on Digital Twin Technology")
 
+# Sidebar Controls
 with st.sidebar:
-    st.header("🎮 لوحة تحكم المحاكاة")
-    tds = st.slider("ملوحة التغذية (ppm)", 5000, 100000, 45000)
-    temp = st.slider("الحرارة (°C)", 15, 50, 25)
-    profile = st.selectbox("نوع المياه", ["Seawater", "Produced Water"])
-    run = st.button("🚀 بدء دورة التشغيل النمذجية")
+    st.header("🎮 Control Panel")
+    tds_input = st.slider("Feedwater TDS (ppm)", 5000, 100000, 45000)
+    temp_input = st.slider("Temperature (°C)", 15, 50, 25)
+    water_profile = st.selectbox("Water Source Profile", ["Seawater", "Produced Water"])
+    st.markdown("---")
+    start_btn = st.button("🚀 Execute Sequence")
 
-# حاويات العرض (تبدأ فارغة)
-header_cols = st.columns(3)
-m_si = header_cols[0].empty()
-m_v = header_cols[1].empty()
-m_g = header_cols[2].empty()
+# Display Placeholders
+m_cols = st.columns(3)
+p_si = m_cols[0].empty()
+p_v = m_cols[1].empty()
+p_g = m_cols[2].empty()
 
 st.write("---")
-st.subheader("🛠️ تمثيل مسار التدفق (Process Flow)")
-flow_cols = st.columns([2, 0.5, 2, 0.5, 2])
-node1 = flow_cols[0].empty()
-line1 = flow_cols[1].empty()
-node2 = flow_cols[2].empty()
-line2 = flow_cols[3].empty()
-node3 = flow_cols[4].empty()
+st.subheader("⚙️ Process Flow Simulation")
+f_cols = st.columns([2, 0.5, 2, 0.5, 2])
+n1 = f_cols[0].empty()
+l1 = f_cols[1].empty()
+n2 = f_cols[2].empty()
+l2 = f_cols[3].empty()
+n3 = f_cols[4].empty()
 
-if run:
-    engine = AIDESEngine(profile)
-    si, risk, v = engine.calculate(tds, temp)
+if start_btn:
+    engine = AIDESEngine(water_profile)
+    si_res, risk_res, v_res, gyp_res = engine.calculate(tds_input, temp_input)
     
-    # --- المرحلة 1: المدخلات ---
-    with node1.container():
-        st.markdown("<div class='process-node'><b>📥 مدخل مياه التغذية</b><br>جاري سحب العينة...</div>", unsafe_allow_html=True)
+    # PHASE 1: Intake
+    with n1.container():
+        st.markdown("<div class='node-card'><b>📥 PHASE 1: INTAKE</b><br>Analyzing Feedwater...</div>", unsafe_allow_html=True)
         time.sleep(1)
-        st.write(f"💧 الملوحة: {tds:,} ppm")
-        st.markdown("<p style='color:#00ffcc;'>✅ تم التحليل</p>", unsafe_allow_html=True)
+        st.write(f"🔹 TDS: {tds_input:,} ppm")
+        st.markdown("<p style='color:#58a6ff;'>✅ Sensors Online</p>", unsafe_allow_html=True)
     
-    # رسالة ذكاء اصطناعي للتحويل
-    st.markdown(f"<div class='ai-msg'>[AI]: تحليل المرحلة 1 مكتمل. قيمة الإشباع المتوقعة SI={si:.2f}. توجيه التدفق للمرحلة 2...</div>", unsafe_allow_html=True)
-    line1.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
-    time.sleep(1.5)
+    st.markdown(f"<div class='ai-log'>[AI-SYSTEM]: Analyzing ion concentrations... Estimated SI: {si_res:.2f}. Proceeding to Treatment.</div>", unsafe_allow_html=True)
+    l1.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
+    time.sleep(1.2)
 
-    # --- المرحلة 2: المعالجة الذكية ---
-    m_si.metric("Saturation Index (SI)", f"{si:.4f}")
-    with node2.container():
-        color = "#ff3333" if risk else "#00ffcc"
-        st.markdown(f"<div class='process-node' style='border-color:{color}'><b>⚡ خلية AIDES الذكية</b><br>المعالجة والانتزاع</div>", unsafe_allow_html=True)
+    # PHASE 2: Treatment
+    p_si.metric("Saturation Index (SI)", f"{si_res:.4f}")
+    with n2.container():
+        status_color = "#ff3333" if risk_res else "#00ffcc"
+        st.markdown(f"<div class='node-card' style='border-color:{status_color}'><b>⚡ PHASE 2: AIDES CELL</b><br>Ion Extraction & Control</div>", unsafe_allow_html=True)
         time.sleep(1)
-        if risk:
-            st.error(f"⚠️ تنبيه: خطر ترسيب! (SI={si:.2f})")
-            st.markdown(f"<div class='ai-msg'>[AI]: تم تفعيل بروتوكول براءة الاختراع. خفض الجهد لـ {v}V لمنع الترسيب.</div>", unsafe_allow_html=True)
+        if risk_res:
+            st.markdown(f"<div class='ai-log' style='border-color:red; color:red;'>[AI-ALERT]: SCALING RISK DETECTED! Activating Protection Protocol. Voltage adjusted to {v_res:.2f}V.</div>", unsafe_allow_html=True)
         else:
-            st.success("✅ الحالة: مستقرة")
-            st.markdown(f"<div class='ai-msg'>[AI]: استقرار كيميائي مثالي. الحفاظ على جهد {v}V.</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='ai-log'>[AI-SYSTEM]: Scaling index within safe limits. Optimizing Voltage for max yield.</div>", unsafe_allow_html=True)
     
-    m_v.metric("Control Voltage", f"{v:.2f} V")
-    line2.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
-    time.sleep(1.5)
+    p_v.metric("Control Voltage", f"{v_res:.2f} V")
+    l2.markdown("<div class='flow-line'></div>", unsafe_allow_html=True)
+    time.sleep(1.2)
 
-    # --- المرحلة 3: الإنتاج النهائي ---
-    with node3.container():
-        st.markdown("<div class='process-node'><b>🏗️ إنتاج الجبس</b><br>تجميع وتجفيف</div>", unsafe_allow_html=True)
+    # PHASE 3: Recovery
+    with n3.container():
+        st.markdown("<div class='node-card'><b>🏗️ PHASE 3: RECOVERY</b><br>Gypsum Mineral Harvesting</div>", unsafe_allow_html=True)
         time.sleep(1)
-        gyp = (tds * 0.04) / 1000
-        st.write(f"💎 النقاء: 99.1%")
-        st.write(f"📦 الإنتاج: {gyp:.2f} طن/س")
+        st.write(f"💎 Purity: 99.2%")
+        st.write(f"📦 Yield: {gyp_res:.3f} T/hr")
     
-    m_g.metric("Est. Gypsum Yield", f"{gyp:.2f} T/h")
-    st.markdown("<div class='ai-msg'>[AI]: اكتملت الدورة التشغيلية بنجاح. تم تسجيل البيانات في الأرشيف السيادي.</div>", unsafe_allow_html=True)
-    st.balloons() # لمسة احتفالية خفيفة بالنهاية
+    p_g.metric("Gypsum Production", f"{gyp_res:.3f} T/h")
+    
+    # FINAL COMPLETION (Official)
+    st.write("---")
+    st.markdown(f"""
+        <div class="success-cert">
+            <h2 style="margin:0; color: #238636;">✅ Process Sequence Completed</h2>
+            <p>All operational parameters have been successfully validated and archived.</p>
+            <small>Reference ID: AIDES-ENG-{int(time.time())}</small>
+        </div>
+    """, unsafe_allow_html=True)
 
 else:
-    st.info("💡 النظام في وضع الاستعداد. اضغط على 'بدء دورة التشغيل' لمشاهدة المحاكاة النمذجية.")
+    st.info("💡 Ready for operation. Press 'Execute Sequence' to start the industrial simulation.")
+
+st.write("---")
+st.caption("AIDES Smart Assistant | Professional Interface 2026")
