@@ -1,6 +1,6 @@
 import streamlit as st
 
-# --- 1. المحرك الهندسي للمنصة ---
+# --- 1. المحرك الهندسي للهوية الذكية ---
 class AIDESEngine:
     def __init__(self, profile):
         self.K_SP = 2.4e-5
@@ -15,14 +15,13 @@ class AIDESEngine:
         temp_f = 1 + (temp - 25) * 0.01
         si = ion_p / (self.K_SP * temp_f)
         risk = si > self.threshold
-        voltage = 1.5 if not risk else 1.5 * 0.85
-        gyp_kg_hr = self.flow_rate * (tds / 1000) * 0.05 * 1.72 * 0.9
-        gyp_tons = gyp_kg_hr / 1000
+        voltage = 1.5 if not risk else 1.25
+        gyp_tons = self.flow_rate * (tds / 1000) * 0.00008
         health_val = 100 if not risk else 100 - (si - self.threshold) * 50
-        cip_val = int(120 - (tds/1000)*1.3) if risk else 450
+        cip_val = int(120 - (tds/1000)) if risk else 450
         return si, risk, voltage, gyp_tons, health_val, cip_val
 
-# --- 2. إعدادات الواجهة وتأثير الـ 3D النافر ---
+# --- 2. إعدادات الواجهة وتصميم الـ 3D النافر ---
 st.set_page_config(page_title='AIDES Smart Assistant', layout='wide')
 
 st.markdown('''
@@ -30,7 +29,6 @@ st.markdown('''
     .stApp { background-color: #10141d; color: #e6edf3; }
     [data-testid='stMetricValue'] { color: #00ffcc !important; font-weight: bold; }
     
-    /* تأثير البروز الثلاثي الأبعاد */
     .neumorphic-card {
         padding: 25px;
         border-radius: 20px;
@@ -42,14 +40,14 @@ st.markdown('''
     }
     
     .floating-rocket {
-        width: 110px;
+        width: 100px;
         filter: drop-shadow(0 0 10px #00ffcc);
         animation: float 3s ease-in-out infinite;
     }
     
     @keyframes float {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-12px); }
+        50% { transform: translateY(-10px); }
     }
     </style>
     ''', unsafe_allow_html=True)
@@ -61,25 +59,24 @@ with st.sidebar:
     st.header('⚙️ Operational Settings')
     tds_in = st.slider('Feedwater TDS (ppm)', 5000, 100000, 45000)
     temp_in = st.slider('Temperature (C)', 15, 50, 25)
-    prof = st.selectbox('Application Sector', ['Seawater', 'Produced Water', 'Industrial', 'Agriculture'])
+    prof = st.selectbox('Sector', ['Seawater', 'Produced Water', 'Industrial'])
     run = st.button('🚀 تشغيل النظام (Run System)')
 
-ICON_ROCKET = 'https://cdn.pixabay.com/animation/2023/06/13/15/12/15-12-47-323_512.gif'
-
 if run:
-    engine = AIDESEngine(prof)
-    si, risk, v, gyp, h, c = engine.calculate(tds_in, temp_in)
+    eng = AIDESEngine(prof)
+    si, risk, v, gyp, h, c = eng.calculate(tds_in, temp_in)
     
-    col1, col2, col3 = st.columns(3)
-    col1.metric('Saturation Index', f'{si:.4f}')
-    col2.metric('Operating Voltage', f'{v:.2f} V')
-    col3.metric('Gypsum Recovery', f'{gyp:.3f} T/h')
+    m1, m2, m3 = st.columns(3)
+    m1.metric('Saturation Index', f'{si:.4f}')
+    m2.metric('Voltage', f'{v:.2f} V')
+    m3.metric('Gypsum Yield', f'{gyp:.3f} T/h')
 
     st.divider()
     c1, c2, c3 = st.columns(3)
     
     with c1:
-        st.markdown(f"<div class='neumorphic-card'><img src='{ICON_ROCKET}' class='floating-rocket'><br><br><h3>PHASE 1: INTAKE</h3></div>", unsafe_allow_html=True)
+        st.markdown("<div class='neumorphic-card'><img src='https://cdn.pixabay.com/animation/2023/06/13/15/12/15-12-47-323_512.gif' class='floating-rocket'><h3>PHASE 1</h3><p>INTAKE</p></div>", unsafe_allow_html=True)
             
     with c2:
-        clr = '#ff4b4b' if risk else '#0
+        color_code = '#ff4b4b' if risk else '#00ffcc'
+        st.markdown(f"<div class='neumorphic-card' style='border-top: 5px solid {color_code};'><h1 style='font-size: 50px;'>⚡</h1><h3>
