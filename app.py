@@ -23,7 +23,7 @@ class AIDESEngine:
         gyp_tons = gyp_kg_hr / 1000
         # Predictive Maintenance Logic
         health_val = 100 if not risk else 100 - (si - self.threshold) * 50
-        cip_val = int(250 - (tds/1000)*1.2) if risk else 450
+        cip_val = int(100 - (tds/1000)*1.2) if risk else 450
         return si, risk, voltage, gyp_tons, health_val, cip_val
 
 # --- 2. إعدادات الواجهة الرسومية ---
@@ -74,3 +74,4 @@ if run:
         st.markdown(f"<div class='node-card'><img src='{ICON_GY}' width='100'><br><b>PHASE 3: HARVESTING</b></div>", unsafe_allow_html=True)
     
     st.success("✅ Analysis Complete!")
+
